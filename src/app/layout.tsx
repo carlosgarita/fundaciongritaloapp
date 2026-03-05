@@ -8,6 +8,9 @@ const inter = Inter({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+if (!SITE_URL) throw new Error("NEXT_PUBLIC_SITE_URL is required");
+
 export const metadata: Metadata = {
   title: "Fundación Grítalo - Gestión de Voluntariado",
   description:
@@ -16,10 +19,33 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  metadataBase: new URL(SITE_URL),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Fundación Grítalo - Gestión de Voluntariado",
+    description:
+      "Sistema de gestión de voluntarios y actividades para la Fundación Grítalo",
+    url: SITE_URL,
+    siteName: "Fundación Grítalo",
+    locale: "es_CR",
+    type: "website",
+    images: [
+      { url: "/logo.png", width: 512, height: 512, alt: "Fundación Grítalo" },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "Fundación Grítalo",
+    description:
+      "Sistema de gestión de voluntarios y actividades para la Fundación Grítalo",
+    images: ["/logo.png"],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2563EB",
+  themeColor: "#137FEC",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -33,6 +59,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} font-sans antialiased`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-0 focus:left-0 focus:z-[100] focus:bg-primary-500 focus:text-text-inverse focus:px-4 focus:py-2 focus:text-sm"
+        >
+          Saltar al contenido principal
+        </a>
         {children}
       </body>
     </html>

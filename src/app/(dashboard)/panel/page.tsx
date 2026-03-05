@@ -48,14 +48,6 @@ export default async function DashboardPage() {
             Gestión estratégica de la Fundación Grítalo
           </p>
         </div>
-        <p className="text-xs text-text-muted uppercase tracking-wide">
-          Última sincronización: Hoy,{" "}
-          {new Date().toLocaleTimeString("es", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })}
-        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
@@ -102,8 +94,8 @@ export default async function DashboardPage() {
               <p className="text-sm font-medium text-text-secondary">
                 Horas del Mes
               </p>
-              <div className="h-10 w-10 rounded-lg bg-orange-50 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-accent-orange" />
+              <div className="h-10 w-10 rounded-lg bg-primary-50 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-primary-500" />
               </div>
             </div>
           </CardHeader>

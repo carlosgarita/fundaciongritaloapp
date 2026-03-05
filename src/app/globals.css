@@ -17,6 +17,10 @@
   --color-accent-green: #22c55e;
   --color-accent-yellow: #eab308;
 
+  --color-error-surface: #fef2f2;
+  --color-error-border: #fecaca;
+  --color-success-surface: #f0fdf4;
+
   --color-surface: #ffffff;
   --color-surface-secondary: #f8fafc;
   --color-surface-hover: #f1f5f9;
@@ -106,4 +110,15 @@ input:-webkit-autofill:focus {
 
 .animate-shake {
   animation: shake 0.5s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ignorar configuraciones locales de Cursor y Agentes (No subir a GitHub)
+.cursor/
+.agents/

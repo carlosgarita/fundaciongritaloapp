@@ -51,7 +51,7 @@ export default function RecoveryPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-secondary p-4">
+    <main id="main-content" className="min-h-screen flex items-center justify-center bg-surface-secondary p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="bg-surface rounded-2xl shadow-lg p-8 sm:p-10">
           <div className="mb-8">
@@ -60,7 +60,7 @@ export default function RecoveryPage() {
 
           {sent ? (
             <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
+              <div className="mx-auto w-16 h-16 bg-success-surface rounded-full flex items-center justify-center">
                 <CheckCircle2 className="h-8 w-8 text-accent-green" />
               </div>
               <h2 className="text-xl font-bold text-text-primary">
@@ -101,7 +101,7 @@ export default function RecoveryPage() {
                 />
 
                 {error && (
-                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-2 p-3 bg-error-surface border border-error-border rounded-lg">
                     <AlertCircle className="h-5 w-5 text-accent-red shrink-0 mt-0.5" />
                     <p className="text-sm text-accent-red">{error}</p>
                   </div>
@@ -130,6 +130,6 @@ export default function RecoveryPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

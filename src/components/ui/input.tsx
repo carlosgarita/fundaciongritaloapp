@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, type InputHTMLAttributes, useState } from "react";
+import { forwardRef, type InputHTMLAttributes, useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -11,7 +11,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, icon, type, ...props }, ref) => {
+  ({ className, label, error, icon, type, id: externalId, ...props }, ref) => {
+    const generatedId = useId();
+    const inputId = externalId ?? generatedId;
+    const errorId = error ? `${inputId}-error` : undefined;
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
@@ -19,7 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-text-primary mb-1.5">
+          <label htmlFor={inputId} className="block text-sm font-medium text-text-primary mb-1.5">
             {label}
           </label>
         )}
@@ -31,7 +34,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           <input
             ref={ref}
+            id={inputId}
             type={inputType}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={errorId}
             className={cn(
               "w-full h-12 rounded-xl border bg-white px-4 text-sm text-text-primary placeholder:text-text-muted transition-colors duration-150",
               "focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500",
@@ -49,18 +55,19 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               type="button"
               tabIndex={-1}
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors cursor-pointer"
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5" />
+                <EyeOff className="h-5 w-5" aria-hidden="true" />
               ) : (
-                <Eye className="h-5 w-5" />
+                <Eye className="h-5 w-5" aria-hidden="true" />
               )}
             </button>
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-accent-red flex items-center gap-1">
+          <p id={errorId} role="alert" className="mt-1.5 text-sm text-accent-red flex items-center gap-1">
             {error}
           </p>
         )}

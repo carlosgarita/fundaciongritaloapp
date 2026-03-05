@@ -58,7 +58,9 @@ export function Sidebar({ profile }: SidebarProps) {
         />
         <div>
           <p className="text-primary-200 text-xs">Fundación</p>
-          <p className="font-bold text-white text-sm leading-tight">Grítalo</p>
+          <p className="font-bold text-text-inverse text-sm leading-tight">
+            Grítalo
+          </p>
         </div>
       </div>
 
@@ -73,24 +75,24 @@ export function Sidebar({ profile }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-white/15 text-white"
-                  : "text-primary-200 hover:bg-white/10 hover:text-white",
+                  ? "bg-surface/10 text-text-inverse"
+                  : "text-primary-200 hover:bg-surface/20 hover:text-text-inverse",
               )}
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
               {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-surface/10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-bold">
+          <div className="w-9 h-9 rounded-full bg-accent-green flex items-center justify-center text-text-inverse text-sm font-bold">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">
+            <p className="text-sm font-medium text-text-inverse truncate">
               {profile.nombre} {profile.apellido}
             </p>
             <p className="text-xs text-primary-200">Administrador</p>
@@ -98,7 +100,7 @@ export function Sidebar({ profile }: SidebarProps) {
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 text-sm text-primary-200 hover:text-white transition-colors w-full cursor-pointer"
+          className="flex items-center gap-2 text-sm text-primary-200 hover:text-text-inverse transition-colors w-full cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
           Cerrar Sesión
@@ -112,15 +114,16 @@ export function Sidebar({ profile }: SidebarProps) {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden bg-primary-500 text-white p-2 rounded-lg shadow-lg cursor-pointer"
+        aria-label="Abrir menú"
+        className="fixed top-4 left-4 z-50 lg:hidden bg-primary-500 text-text-inverse p-2 rounded-lg shadow-lg cursor-pointer"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
 
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-primary-900/50 z-40 lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -134,9 +137,10 @@ export function Sidebar({ profile }: SidebarProps) {
       >
         <button
           onClick={() => setMobileOpen(false)}
-          className="absolute top-4 right-4 text-white/70 hover:text-white cursor-pointer"
+          aria-label="Cerrar menú"
+          className="absolute top-4 right-4 text-text-inverse/70 hover:text-text-inverse cursor-pointer"
         >
-          <X className="h-5 w-5" />
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
         {sidebarContent}
       </aside>

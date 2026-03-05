@@ -1,0 +1,21 @@
+{
+  "name": "Fundación Grítalo - Gestión de Voluntariado",
+  "short_name": "Grítalo",
+  "description": "Sistema de gestión de voluntarios y actividades para la Fundación Grítalo",
+  "start_url": "/panel",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

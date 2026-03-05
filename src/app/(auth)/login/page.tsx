@@ -44,8 +44,7 @@ export default function LoginPage() {
 
       router.push("/panel");
       router.refresh();
-    } catch (err) {
-      console.error("Login error:", err);
+    } catch {
       setGeneralError("Error de conexión. Intente más tarde.");
     } finally {
       setLoading(false);
@@ -53,7 +52,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-secondary p-4">
+    <main id="main-content" className="min-h-screen flex items-center justify-center bg-surface-secondary p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="bg-surface rounded-2xl shadow-lg p-8 sm:p-10">
           <div className="mb-8">
@@ -86,7 +85,7 @@ export default function LoginPage() {
             />
 
             {generalError && (
-              <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg animate-shake">
+              <div className="flex items-start gap-2 p-3 bg-error-surface border border-error-border rounded-lg animate-shake">
                 <AlertCircle className="h-5 w-5 text-accent-red shrink-0 mt-0.5" />
                 <p className="text-sm text-accent-red">{generalError}</p>
               </div>
@@ -119,6 +118,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
