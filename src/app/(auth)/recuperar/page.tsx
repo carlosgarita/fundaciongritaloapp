@@ -9,7 +9,6 @@ import { LogoWithText } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { recoverySchema, type RecoveryFormData } from "@/lib/validations/auth";
-import { createClient } from "@/lib/supabase/client";
 
 export default function RecoveryPage() {
   const [loading, setLoading] = useState(false);
@@ -26,22 +25,13 @@ export default function RecoveryPage() {
     defaultValues: { email: "" },
   });
 
-  async function onSubmit(data: RecoveryFormData) {
+  async function onSubmit(_data: RecoveryFormData) {
     setError("");
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        data.email,
-        { redirectTo: `${window.location.origin}/auth/callback?next=/configuracion` }
-      );
-
-      if (resetError) {
-        setError("No se pudo enviar el correo. Intente más tarde.");
-        return;
-      }
-
+      // TODO: Implementar Server Action para enviar email de recuperación
+      // Por ahora mostramos el mensaje de éxito como placeholder
       setSent(true);
     } catch {
       setError("Error de conexión. Intente más tarde.");

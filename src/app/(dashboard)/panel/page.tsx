@@ -1,25 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Users, CalendarDays, Clock } from "lucide-react";
+import { getDashboardStats, getUpcomingActivities } from "@/lib/actions/dashboard";
 
-async function getDashboardData() {
-  const supabase = await createClient();
-
-  const [statsResult, activitiesResult] = await Promise.all([
-    supabase.from("dashboard_stats").select("*").single(),
-    supabase
-      .from("activities")
-      .select("*")
-      .eq("estado", "publicada")
-      .order("fecha_inicio", { ascending: true })
-      .limit(5),
-  ]);
-
-  return {
-    stats: statsResult.data,
-    activities: activitiesResult.data ?? [],
-  };
-}
+type UpcomingActivity = Awaited<ReturnType<typeof getUpcomingActivities>>[number];
 
 export default async function DashboardPage() {
   let stats = {
@@ -27,12 +10,15 @@ export default async function DashboardPage() {
     proximas_actividades: 0,
     horas_mes_actual: 0,
   };
-  let activities: Array<Record<string, unknown>> = [];
+  let activities: UpcomingActivity[] = [];
 
   try {
-    const data = await getDashboardData();
-    if (data.stats) stats = data.stats;
-    activities = data.activities;
+    const [statsData, activitiesData] = await Promise.all([
+      getDashboardStats(),
+      getUpcomingActivities(),
+    ]);
+    stats = statsData;
+    activities = activitiesData;
   } catch {
     // DB queries failed — show empty dashboard
   }
@@ -115,7 +101,7 @@ export default async function DashboardPage() {
         {activities.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {activities.map((activity) => {
-              const date = new Date(activity.fecha_inicio as string);
+              const date = new Date(activity.fechaInicio);
               const day = date.getDate();
               const weekday = date
                 .toLocaleDateString("es", { weekday: "short" })
@@ -125,7 +111,7 @@ export default async function DashboardPage() {
                 minute: "2-digit",
                 hour12: true,
               });
-              const endDate = new Date(activity.fecha_cierre as string);
+              const endDate = new Date(activity.fechaCierre);
               const timeEnd = endDate.toLocaleTimeString("es", {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -134,7 +120,7 @@ export default async function DashboardPage() {
 
               return (
                 <Card
-                  key={activity.id as string}
+                  key={activity.id}
                   className="hover:shadow-md transition-shadow"
                 >
                   <CardContent className="pt-5">
@@ -148,15 +134,15 @@ export default async function DashboardPage() {
                         </span>
                       </div>
                       <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full capitalize">
-                        {activity.tipo as string}
+                        {activity.tipo}
                       </span>
                     </div>
                     <h3 className="font-semibold text-text-primary mb-2">
-                      {activity.nombre as string}
+                      {activity.nombre}
                     </h3>
                     {activity.ubicacion ? (
                       <p className="text-sm text-text-secondary mb-1">
-                        📍 {activity.ubicacion as string}
+                        📍 {activity.ubicacion}
                       </p>
                     ) : null}
                     <p className="text-sm text-text-secondary">

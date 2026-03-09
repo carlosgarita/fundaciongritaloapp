@@ -14,12 +14,17 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { logoutAction } from "@/lib/actions/auth";
 import { useState } from "react";
-import type { Profile } from "@/lib/types";
+
+interface SidebarProfile {
+  nombre: string;
+  apellido: string;
+  email: string;
+}
 
 interface SidebarProps {
-  profile: Profile;
+  profile: SidebarProfile;
 }
 
 const navItems = [
@@ -40,8 +45,7 @@ export function Sidebar({ profile }: SidebarProps) {
     profile.email[0].toUpperCase();
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await logoutAction();
     router.push("/login");
     router.refresh();
   }

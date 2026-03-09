@@ -1,0 +1,251 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Auth.js required models
+// ──────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  image         String?
+
+  nombre      String          @default("")
+  apellido    String          @default("")
+  cedula      String?         @unique
+  telefono    String          @default("")
+  role        UserRole        @default(voluntario)
+  estado      VolunteerStatus @default(pendiente)
+  habilidades String[]        @default([])
+  avatarUrl   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  activities  Activity[]          @relation("CreatedBy")
+  enrollments ActivityEnrollment[]
+  hourLogs    HourLog[]           @relation("Volunteer")
+  validations HourLog[]           @relation("Validator")
+  notifications Notification[]
+  userBadges  UserBadge[]
+  pushSubscriptions PushSubscription[]
+
+  @@index([role])
+  @@index([estado])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ──────────────────────────────────────────────
+// Application models (migrated from Supabase)
+// ──────────────────────────────────────────────
+
+enum UserRole {
+  admin
+  voluntario
+}
+
+enum VolunteerStatus {
+  activo
+  inactivo
+  pendiente
+}
+
+enum ActivityType {
+  social
+  comunitario
+  educacion
+  ambiente
+  salud
+  comunicacion
+  logistica
+  otro
+}
+
+enum ActivityStatus {
+  borrador
+  publicada
+  finalizada
+  cancelada
+}
+
+enum EnrollmentStatus {
+  inscrito
+  confirmado
+  cancelado
+}
+
+enum HourLogStatus {
+  pendiente
+  validado
+  rechazado
+}
+
+enum NotificationType {
+  info
+  actividad
+  validacion
+  badge
+  sistema
+}
+
+enum BadgeCriteria {
+  horas
+  actividades
+  antiguedad
+  especial
+}
+
+model Activity {
+  id               String         @id @default(cuid())
+  nombre           String
+  descripcion      String         @default("")
+  tipo             ActivityType   @default(otro)
+  fechaInicio      DateTime
+  fechaCierre      DateTime
+  cuposTotales     Int            @default(0)
+  cuposDisponibles Int            @default(0)
+  estado           ActivityStatus @default(borrador)
+  ubicacion        String         @default("")
+  createdById      String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  createdBy   User?                @relation("CreatedBy", fields: [createdById], references: [id])
+  enrollments ActivityEnrollment[]
+  hourLogs    HourLog[]
+
+  @@index([estado])
+  @@index([fechaInicio])
+}
+
+model ActivityEnrollment {
+  id          String           @id @default(cuid())
+  activityId  String
+  volunteerId String
+  estado      EnrollmentStatus @default(inscrito)
+  createdAt   DateTime         @default(now())
+
+  activity  Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  volunteer User     @relation(fields: [volunteerId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, volunteerId])
+  @@index([activityId])
+  @@index([volunteerId])
+}
+
+model HourLog {
+  id          String        @id @default(cuid())
+  volunteerId String
+  activityId  String
+  fecha       DateTime      @db.Date
+  horas       Decimal       @db.Decimal(4, 1)
+  estado      HourLogStatus @default(pendiente)
+  notas       String        @default("")
+  validatedById String?
+  createdAt   DateTime      @default(now())
+
+  volunteer   User     @relation("Volunteer", fields: [volunteerId], references: [id], onDelete: Cascade)
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  validatedBy User?    @relation("Validator", fields: [validatedById], references: [id])
+
+  @@index([volunteerId])
+  @@index([activityId])
+  @@index([fecha])
+  @@index([estado])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  titulo    String
+  mensaje   String
+  leida     Boolean          @default(false)
+  tipo      NotificationType @default(info)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, leida])
+}
+
+model Badge {
+  id            String        @id @default(cuid())
+  nombre        String
+  descripcion   String
+  icono         String        @default("🏆")
+  criterio      BadgeCriteria
+  valorCriterio Int           @default(0)
+  createdAt     DateTime      @default(now())
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  userId       String
+  subscription Json
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

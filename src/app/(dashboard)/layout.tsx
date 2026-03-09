@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAuthUser, getCurrentUser } from "@/lib/supabase/auth-helpers";
+import { auth } from "@/auth";
 import { Sidebar } from "@/components/sidebar";
 
 export default async function DashboardLayout({
@@ -7,11 +7,15 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const authUser = await getAuthUser();
-  if (!authUser) redirect("/login");
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+  if (session.user.role !== "admin") redirect("/login");
 
-  const profile = await getCurrentUser();
-  if (!profile || profile.role !== "admin") redirect("/login");
+  const profile = {
+    nombre: session.user.nombre ?? "",
+    apellido: session.user.apellido ?? "",
+    email: session.user.email ?? "",
+  };
 
   return (
     <div className="min-h-screen bg-surface-secondary">

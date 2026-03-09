@@ -10,7 +10,7 @@ import { LogoWithText } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
-import { createClient } from "@/lib/supabase/client";
+import { loginAction } from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,14 +31,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      const result = await loginAction(data.email, data.password);
 
-      if (error) {
-        setGeneralError("Credenciales incorrectas. Intente de nuevo.");
+      if (!result.success) {
+        setGeneralError(result.error ?? "Error de autenticación.");
         return;
       }
 
