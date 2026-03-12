@@ -1,0 +1,83 @@
+import { prisma } from "@/lib/prisma";
+import type { HourLogStatus } from "@prisma/client";
+
+export interface CreateHourLogInput {
+  volunteerId: string;
+  activityId: string;
+  fecha: string;
+  horas: number;
+  notas?: string;
+}
+
+export interface UpdateHourLogInput {
+  estado: HourLogStatus;
+  validatedById?: string;
+}
+
+export class HourLogService {
+  static async findAll(filters?: { volunteerId?: string; estado?: HourLogStatus }) {
+    return prisma.hourLog.findMany({
+      where: {
+        ...(filters?.volunteerId && { volunteerId: filters.volunteerId }),
+        ...(filters?.estado && { estado: filters.estado }),
+      },
+      include: {
+        volunteer: { select: { id: true, nombre: true, apellido: true } },
+        activity: { select: { id: true, nombre: true } },
+        validatedBy: { select: { id: true, nombre: true, apellido: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  static async findById(id: string) {
+    return prisma.hourLog.findUnique({
+      where: { id },
+      include: {
+        volunteer: { select: { id: true, nombre: true, apellido: true, email: true } },
+        activity: { select: { id: true, nombre: true } },
+        validatedBy: { select: { id: true, nombre: true, apellido: true } },
+      },
+    });
+  }
+
+  static async create(input: CreateHourLogInput) {
+    const enrollment = await prisma.activityEnrollment.findUnique({
+      where: {
+        activityId_volunteerId: {
+          activityId: input.activityId,
+          volunteerId: input.volunteerId,
+        },
+      },
+    });
+    if (!enrollment) {
+      throw new Error("El voluntario no está inscrito en esta actividad");
+    }
+
+    return prisma.hourLog.create({
+      data: {
+        volunteerId: input.volunteerId,
+        activityId: input.activityId,
+        fecha: new Date(input.fecha),
+        horas: input.horas,
+        notas: input.notas ?? "",
+      },
+    });
+  }
+
+  static async updateStatus(id: string, input: UpdateHourLogInput) {
+    const log = await prisma.hourLog.findUnique({ where: { id } });
+    if (!log) throw new Error("Registro de horas no encontrado");
+    if (log.estado !== "pendiente") {
+      throw new Error("Solo se pueden validar registros pendientes");
+    }
+
+    return prisma.hourLog.update({
+      where: { id },
+      data: {
+        estado: input.estado,
+        validatedById: input.validatedById,
+      },
+    });
+  }
+}

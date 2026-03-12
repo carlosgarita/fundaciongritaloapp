@@ -1,26 +1,9 @@
-import { auth } from "@/auth";
-import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl;
-  const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/recuperar");
-  const isLoggedIn = !!req.auth;
+const { auth } = NextAuth(authConfig);
 
-  if (!isLoggedIn && !isAuthPage) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  if (isLoggedIn && isAuthPage) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/panel";
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
-});
+export default auth;
 
 export const config = {
   matcher: [

@@ -8,17 +8,18 @@ export async function loginAction(email: string, password: string) {
     await signIn("credentials", {
       email,
       password,
-      redirect: false,
+      redirectTo: "/panel",
     });
-    return { success: true };
   } catch (error) {
     if (error instanceof AuthError) {
       return { success: false, error: "Credenciales incorrectas. Intente de nuevo." };
     }
+    // NEXT_REDIRECT throws an error that must be re-thrown
     throw error;
   }
+  return { success: true };
 }
 
 export async function logoutAction() {
-  await signOut({ redirect: false });
+  await signOut({ redirectTo: "/login" });
 }

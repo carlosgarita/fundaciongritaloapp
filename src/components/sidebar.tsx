@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -37,7 +37,6 @@ const navItems = [
 
 export function Sidebar({ profile }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const initials =
@@ -46,8 +45,6 @@ export function Sidebar({ profile }: SidebarProps) {
 
   async function handleLogout() {
     await logoutAction();
-    router.push("/login");
-    router.refresh();
   }
 
   const sidebarContent = (

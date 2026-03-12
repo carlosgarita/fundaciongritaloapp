@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, AlertCircle } from "lucide-react";
@@ -13,7 +12,6 @@ import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { loginAction } from "@/lib/actions/auth";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,15 +31,12 @@ export default function LoginPage() {
     try {
       const result = await loginAction(data.email, data.password);
 
-      if (!result.success) {
+      // If we get here, signIn failed (success redirects automatically)
+      if (result && !result.success) {
         setGeneralError(result.error ?? "Error de autenticación.");
-        return;
       }
-
-      router.push("/panel");
-      router.refresh();
     } catch {
-      setGeneralError("Error de conexión. Intente más tarde.");
+      // NEXT_REDIRECT is caught here — this is expected on success
     } finally {
       setLoading(false);
     }

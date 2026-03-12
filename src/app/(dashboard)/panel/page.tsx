@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Users, CalendarDays, Clock } from "lucide-react";
-import { getDashboardStats, getUpcomingActivities } from "@/lib/actions/dashboard";
+import { DashboardService } from "@/lib/services/dashboard.service";
 
-type UpcomingActivity = Awaited<ReturnType<typeof getUpcomingActivities>>[number];
+type UpcomingActivity = Awaited<ReturnType<typeof DashboardService.getUpcomingActivities>>[number];
 
 export default async function DashboardPage() {
   let stats = {
@@ -14,8 +14,8 @@ export default async function DashboardPage() {
 
   try {
     const [statsData, activitiesData] = await Promise.all([
-      getDashboardStats(),
-      getUpcomingActivities(),
+      DashboardService.getStats(),
+      DashboardService.getUpcomingActivities(),
     ]);
     stats = statsData;
     activities = activitiesData;
