@@ -1,20 +1,32 @@
 import { prisma } from "@/lib/prisma";
+import { notDeleted } from "@/lib/soft-delete";
 
 export class DashboardService {
   static async getStats() {
     const [voluntariosActivos, proximasActividades, horasMesActual] =
       await Promise.all([
         prisma.user.count({
-          where: { role: "voluntario", estado: "activo" },
+          where: {
+            role: "voluntario",
+            estado: "activo",
+            ...notDeleted,
+          },
         }),
         prisma.activity.count({
-          where: { estado: "publicada", fechaInicio: { gte: new Date() } },
+          where: {
+            estado: "publicada",
+            fechaInicio: { gte: new Date() },
+            ...notDeleted,
+          },
         }),
         prisma.hourLog
           .aggregate({
             _sum: { horas: true },
             where: {
               estado: "validado",
+              ...notDeleted,
+              volunteer: notDeleted,
+              activity: notDeleted,
               fecha: {
                 gte: new Date(
                   new Date().getFullYear(),
@@ -36,7 +48,7 @@ export class DashboardService {
 
   static async getUpcomingActivities(limit = 5) {
     return prisma.activity.findMany({
-      where: { estado: "publicada" },
+      where: { estado: "publicada", ...notDeleted },
       orderBy: { fechaInicio: "asc" },
       take: limit,
     });

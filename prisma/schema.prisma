@@ -29,6 +29,7 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   accounts    Account[]
   sessions    Session[]
@@ -42,6 +43,7 @@ model User {
 
   @@index([role])
   @@index([estado])
+  @@index([deletedAt])
 }
 
 model Account {
@@ -154,6 +156,7 @@ model Activity {
   createdById      String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  deletedAt        DateTime?
 
   createdBy   User?                @relation("CreatedBy", fields: [createdById], references: [id])
   enrollments ActivityEnrollment[]
@@ -161,6 +164,7 @@ model Activity {
 
   @@index([estado])
   @@index([fechaInicio])
+  @@index([deletedAt])
 }
 
 model ActivityEnrollment {
@@ -188,6 +192,7 @@ model HourLog {
   notas       String        @default("")
   validatedById String?
   createdAt   DateTime      @default(now())
+  deletedAt   DateTime?
 
   volunteer   User     @relation("Volunteer", fields: [volunteerId], references: [id], onDelete: Cascade)
   activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
@@ -197,6 +202,7 @@ model HourLog {
   @@index([activityId])
   @@index([fecha])
   @@index([estado])
+  @@index([deletedAt])
 }
 
 model Notification {

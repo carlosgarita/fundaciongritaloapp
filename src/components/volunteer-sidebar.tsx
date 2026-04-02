@@ -1,43 +1,42 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Users,
   CalendarDays,
-  BarChart3,
   Clock,
-  Award,
   LogOut,
   Menu,
   X,
 } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth";
 import { useState } from "react";
 
-interface SidebarProfile {
+interface VolunteerSidebarProfile {
   nombre: string;
   apellido: string;
   email: string;
 }
 
-interface SidebarProps {
-  profile: SidebarProfile;
+interface VolunteerSidebarProps {
+  profile: VolunteerSidebarProfile;
 }
 
 const navItems = [
-  { href: "/panel", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/voluntarios", label: "Voluntarios", icon: Users },
-  { href: "/actividades", label: "Actividades", icon: CalendarDays },
-  { href: "/horas", label: "Validar horas", icon: Clock },
-  { href: "/badges", label: "Insignias", icon: Award },
-  { href: "/reportes", label: "Reportes", icon: BarChart3 },
+  { href: "/portal", label: "Inicio", icon: LayoutDashboard },
+  { href: "/portal/actividades", label: "Actividades", icon: CalendarDays },
+  { href: "/portal/horas", label: "Mis horas", icon: Clock },
 ];
 
-export function Sidebar({ profile }: SidebarProps) {
+function linkActive(pathname: string, href: string) {
+  if (href === "/portal") return pathname === "/portal";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function VolunteerSidebar({ profile }: VolunteerSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -69,7 +68,7 @@ export function Sidebar({ profile }: SidebarProps) {
 
       <nav className="flex-1 px-3 mt-2 space-y-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = linkActive(pathname, item.href);
           return (
             <Link
               key={item.href}
@@ -98,7 +97,7 @@ export function Sidebar({ profile }: SidebarProps) {
             <p className="text-sm font-medium text-text-inverse truncate">
               {profile.nombre} {profile.apellido}
             </p>
-            <p className="text-xs text-primary-200">Administrador</p>
+            <p className="text-xs text-primary-200">Voluntario</p>
           </div>
         </div>
         <button
@@ -114,7 +113,6 @@ export function Sidebar({ profile }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(true)}
         aria-label="Abrir menú"
@@ -123,7 +121,6 @@ export function Sidebar({ profile }: SidebarProps) {
         <Menu className="h-5 w-5" aria-hidden="true" />
       </button>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="fixed inset-0 bg-primary-900/50 z-40 lg:hidden"
@@ -131,7 +128,6 @@ export function Sidebar({ profile }: SidebarProps) {
         />
       )}
 
-      {/* Mobile sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 bg-primary-500 flex flex-col transition-transform duration-300 lg:hidden",
@@ -148,7 +144,6 @@ export function Sidebar({ profile }: SidebarProps) {
         {sidebarContent}
       </aside>
 
-      {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 bg-primary-500 flex-col fixed inset-y-0 left-0">
         {sidebarContent}
       </aside>

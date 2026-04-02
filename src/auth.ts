@@ -17,8 +17,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        const user = await prisma.user.findFirst({
+          where: {
+            email: credentials.email as string,
+            deletedAt: null,
+          },
         });
 
         if (!user?.passwordHash) return null;
@@ -43,11 +46,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig.callbacks,
     async jwt({ token, user }) {
       if (user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id! },
+        const dbUser = await prisma.user.findFirst({
+          where: { id: user.id!, deletedAt: null },
           select: { role: true, estado: true, nombre: true, apellido: true },
         });
-        if (dbUser) {
+        if (dbUser && user.id) {
           token.id = user.id;
           token.role = dbUser.role;
           token.estado = dbUser.estado;

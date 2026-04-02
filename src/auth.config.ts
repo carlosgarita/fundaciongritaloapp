@@ -19,7 +19,9 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/recuperar");
 
       if (isAuthPage) {
-        if (isLoggedIn) return Response.redirect(new URL("/panel", nextUrl));
+        if (isLoggedIn) {
+          return Response.redirect(new URL("/post-login", nextUrl));
+        }
         return true;
       }
 

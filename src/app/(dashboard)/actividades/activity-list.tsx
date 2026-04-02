@@ -15,16 +15,23 @@ import {
   AlertCircle,
   Search,
   X,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Modal } from "@/components/ui/modal";
 import {
   createActivityAction,
   updateActivityAction,
   deleteActivityAction,
 } from "@/lib/actions/activity";
+import {
+  enrollVolunteerAction,
+  unenrollVolunteerAction,
+} from "@/lib/actions/enrollment";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -43,10 +50,28 @@ interface Activity {
   ubicacion: string;
   createdBy: { id: string; nombre: string; apellido: string } | null;
   _count: { enrollments: number };
+  enrollments: {
+    id: string;
+    estado: string;
+    volunteer: {
+      id: string;
+      nombre: string;
+      apellido: string;
+      email: string;
+    };
+  }[];
+}
+
+interface VolunteerOption {
+  id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
 }
 
 interface ActivityListProps {
   activities: Activity[];
+  volunteers: VolunteerOption[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -90,6 +115,12 @@ const ESTADO_COLORS: Record<string, string> = {
 
 const FILTER_TABS = [{ value: "", label: "Todas" }, ...ESTADO_OPTIONS];
 
+const ENROLLMENT_LABELS: Record<string, string> = {
+  inscrito: "Inscrito",
+  confirmado: "Confirmado",
+  cancelado: "Cancelado",
+};
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("es-CR", {
     day: "numeric",
@@ -126,7 +157,7 @@ type ActivityFormData = z.infer<typeof activityFormSchema>;
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function ActivityList({ activities }: ActivityListProps) {
+export function ActivityList({ activities, volunteers }: ActivityListProps) {
   const router = useRouter();
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -139,6 +170,16 @@ export function ActivityList({ activities }: ActivityListProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [enrollmentModalId, setEnrollmentModalId] = useState<string | null>(null);
+  const [enrollVolunteerId, setEnrollVolunteerId] = useState("");
+  const [enrollLoading, setEnrollLoading] = useState(false);
+  const [enrollError, setEnrollError] = useState("");
+  const [unenrollingId, setUnenrollingId] = useState<string | null>(null);
+
+  const enrollmentActivity = enrollmentModalId
+    ? activities.find((a) => a.id === enrollmentModalId) ?? null
+    : null;
 
   const {
     register,
@@ -207,6 +248,18 @@ export function ActivityList({ activities }: ActivityListProps) {
     setFormMode("closed");
     setEditingId(null);
     setError("");
+  }
+
+  function openEnrollmentModal(activity: Activity) {
+    setEnrollmentModalId(activity.id);
+    setEnrollVolunteerId("");
+    setEnrollError("");
+  }
+
+  function closeEnrollmentModal() {
+    setEnrollmentModalId(null);
+    setEnrollVolunteerId("");
+    setEnrollError("");
   }
 
   /* ---- Submit handler ---- */
@@ -285,6 +338,50 @@ export function ActivityList({ activities }: ActivityListProps) {
       setLoading(false);
     }
   };
+
+  const handleAddEnrollment = async () => {
+    if (!enrollmentActivity || !enrollVolunteerId) return;
+    setEnrollLoading(true);
+    setEnrollError("");
+    const result = await enrollVolunteerAction(
+      enrollmentActivity.id,
+      enrollVolunteerId,
+    );
+    if (result.success) {
+      setEnrollVolunteerId("");
+      router.refresh();
+    } else {
+      setEnrollError(result.error ?? "");
+    }
+    setEnrollLoading(false);
+  };
+
+  const handleRemoveEnrollment = async (enrollmentId: string) => {
+    setUnenrollingId(enrollmentId);
+    setEnrollError("");
+    const result = await unenrollVolunteerAction(enrollmentId);
+    if (result.success) {
+      router.refresh();
+    } else {
+      setEnrollError(result.error ?? "");
+    }
+    setUnenrollingId(null);
+  };
+
+  const availableVolunteers = enrollmentActivity
+    ? volunteers.filter(
+        (v) =>
+          !(enrollmentActivity.enrollments ?? []).some(
+            (e) => e.volunteer.id === v.id,
+          ),
+      )
+    : [];
+
+  const canAddEnrollment =
+    enrollmentActivity &&
+    (enrollmentActivity.estado === "publicada" ||
+      enrollmentActivity.estado === "borrador") &&
+    enrollmentActivity.cuposDisponibles > 0;
 
   /* ---- Render ---- */
 
@@ -530,7 +627,18 @@ export function ActivityList({ activities }: ActivityListProps) {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1 flex-wrap justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEnrollmentModal(activity)}
+                          aria-label={`Inscripciones: ${activity.nombre}`}
+                          disabled={formMode !== "closed"}
+                          icon={<UserPlus className="h-4 w-4" />}
+                          className="whitespace-nowrap"
+                        >
+                          Inscripciones
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -569,6 +677,127 @@ export function ActivityList({ activities }: ActivityListProps) {
           </CardContent>
         </Card>
       )}
+
+      <Modal
+        open={!!enrollmentModalId}
+        onClose={closeEnrollmentModal}
+        title={
+          enrollmentActivity
+            ? `Inscripciones — ${enrollmentActivity.nombre}`
+            : "Inscripciones"
+        }
+        className="max-w-2xl"
+      >
+        {!enrollmentActivity ? (
+          <p className="text-sm text-text-muted">
+            No se encontró la actividad o dejó de estar disponible.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-text-secondary">
+              Cupos: {enrollmentActivity.cuposDisponibles} /{" "}
+              {enrollmentActivity.cuposTotales} · Estado:{" "}
+              {ESTADO_LABELS[enrollmentActivity.estado] ??
+                enrollmentActivity.estado}
+            </p>
+
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary mb-2">
+                Voluntarios inscritos
+              </h3>
+              {(enrollmentActivity.enrollments ?? []).length === 0 ? (
+                <p className="text-sm text-text-muted py-2">
+                  Nadie inscrito aún.
+                </p>
+              ) : (
+                <ul className="divide-y divide-border rounded-xl border border-border max-h-48 overflow-y-auto">
+                  {(enrollmentActivity.enrollments ?? []).map((row) => (
+                    <li
+                      key={row.id}
+                      className="flex items-center justify-between gap-2 px-3 py-2 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-text-primary truncate">
+                          {row.volunteer.nombre} {row.volunteer.apellido}
+                        </p>
+                        <p className="text-xs text-text-muted truncate">
+                          {row.volunteer.email}
+                        </p>
+                        <span className="text-xs text-primary-600">
+                          {ENROLLMENT_LABELS[row.estado] ?? row.estado}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        loading={unenrollingId === row.id}
+                        onClick={() => handleRemoveEnrollment(row.id)}
+                        className="text-accent-red shrink-0"
+                        aria-label="Quitar inscripción"
+                      >
+                        <UserMinus className="h-4 w-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {canAddEnrollment ? (
+              <div className="space-y-2 pt-2 border-t border-border">
+                <h3 className="text-sm font-semibold text-text-primary">
+                  Inscribir voluntario
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+                  <div className="flex-1 min-w-0">
+                    <Select
+                      label="Voluntario"
+                      placeholder="Seleccionar voluntario"
+                      options={availableVolunteers.map((v) => ({
+                        value: v.id,
+                        label: `${v.nombre} ${v.apellido} (${v.email})`,
+                      }))}
+                      value={enrollVolunteerId}
+                      onChange={(e) => setEnrollVolunteerId(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => void handleAddEnrollment()}
+                    loading={enrollLoading}
+                    disabled={!enrollVolunteerId}
+                  >
+                    Añadir
+                  </Button>
+                </div>
+                {availableVolunteers.length === 0 && (
+                  <p className="text-xs text-text-muted">
+                    No quedan voluntarios por inscribir (o no hay voluntarios
+                    dados de alta).
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-text-muted">
+                {enrollmentActivity.estado !== "publicada" &&
+                enrollmentActivity.estado !== "borrador"
+                  ? "No se pueden añadir inscripciones en el estado actual de la actividad."
+                  : enrollmentActivity.cuposDisponibles < 1
+                    ? "No hay cupos disponibles."
+                    : null}
+              </p>
+            )}
+
+            {enrollError && (
+              <div className="flex items-start gap-2 p-2 bg-error-surface border border-error-border rounded-lg text-sm text-accent-red">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                {enrollError}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
 
       {/* Global error for delete actions */}
       {error && formMode === "closed" && (

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { notDeleted } from "@/lib/soft-delete";
 import type { HourLogStatus } from "@prisma/client";
 
 export interface CreateHourLogInput {
@@ -18,6 +19,9 @@ export class HourLogService {
   static async findAll(filters?: { volunteerId?: string; estado?: HourLogStatus }) {
     return prisma.hourLog.findMany({
       where: {
+        ...notDeleted,
+        volunteer: notDeleted,
+        activity: notDeleted,
         ...(filters?.volunteerId && { volunteerId: filters.volunteerId }),
         ...(filters?.estado && { estado: filters.estado }),
       },
@@ -31,8 +35,13 @@ export class HourLogService {
   }
 
   static async findById(id: string) {
-    return prisma.hourLog.findUnique({
-      where: { id },
+    return prisma.hourLog.findFirst({
+      where: {
+        id,
+        ...notDeleted,
+        volunteer: notDeleted,
+        activity: notDeleted,
+      },
       include: {
         volunteer: { select: { id: true, nombre: true, apellido: true, email: true } },
         activity: { select: { id: true, nombre: true } },
@@ -42,12 +51,12 @@ export class HourLogService {
   }
 
   static async create(input: CreateHourLogInput) {
-    const enrollment = await prisma.activityEnrollment.findUnique({
+    const enrollment = await prisma.activityEnrollment.findFirst({
       where: {
-        activityId_volunteerId: {
-          activityId: input.activityId,
-          volunteerId: input.volunteerId,
-        },
+        activityId: input.activityId,
+        volunteerId: input.volunteerId,
+        activity: notDeleted,
+        volunteer: notDeleted,
       },
     });
     if (!enrollment) {
@@ -66,7 +75,9 @@ export class HourLogService {
   }
 
   static async updateStatus(id: string, input: UpdateHourLogInput) {
-    const log = await prisma.hourLog.findUnique({ where: { id } });
+    const log = await prisma.hourLog.findFirst({
+      where: { id, ...notDeleted },
+    });
     if (!log) throw new Error("Registro de horas no encontrado");
     if (log.estado !== "pendiente") {
       throw new Error("Solo se pueden validar registros pendientes");

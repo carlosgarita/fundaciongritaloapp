@@ -6,7 +6,6 @@ Disallow: /panel
 Disallow: /voluntarios
 Disallow: /actividades
 Disallow: /reportes
-Disallow: /configuracion
 Disallow: /api/
 
 Sitemap: https://gritalo.org/sitemap.xml

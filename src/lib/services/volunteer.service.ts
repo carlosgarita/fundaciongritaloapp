@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
+import { notDeleted } from "@/lib/soft-delete";
 import bcrypt from "bcryptjs";
-import type { VolunteerStatus } from "@prisma/client";
+import { Prisma, type VolunteerStatus } from "@prisma/client";
 
 export interface CreateVolunteerInput {
   email: string;
@@ -41,6 +42,7 @@ export class VolunteerService {
     return prisma.user.findMany({
       where: {
         role: "voluntario",
+        ...notDeleted,
         ...(filters?.estado && { estado: filters.estado }),
       },
       select: VOLUNTEER_SELECT,
@@ -49,8 +51,8 @@ export class VolunteerService {
   }
 
   static async findById(id: string) {
-    return prisma.user.findUnique({
-      where: { id },
+    return prisma.user.findFirst({
+      where: { id, ...notDeleted },
       select: VOLUNTEER_SELECT,
     });
   }
@@ -82,7 +84,7 @@ export class VolunteerService {
   }
 
   static async update(id: string, input: UpdateVolunteerInput) {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findFirst({ where: { id, ...notDeleted } });
     if (!user) throw new Error("Voluntario no encontrado");
 
     return prisma.user.update({
@@ -93,10 +95,12 @@ export class VolunteerService {
   }
 
   static async delete(id: string) {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findFirst({ where: { id, ...notDeleted } });
     if (!user) throw new Error("Voluntario no encontrado");
     if (user.role === "admin") throw new Error("No se puede eliminar un administrador");
 
-    await prisma.user.delete({ where: { id } });
+    await prisma.$executeRaw(
+      Prisma.sql`UPDATE "User" SET "deletedAt" = ${new Date()} WHERE id = ${id}`,
+    );
   }
 }

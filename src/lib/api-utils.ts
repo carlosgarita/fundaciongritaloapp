@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Standard JSON success response.
@@ -22,6 +23,13 @@ export function jsonError(message: string, status = 400) {
 export async function getSessionOrFail() {
   const session = await auth();
   if (!session?.user) {
+    return { session: null, error: jsonError("No autenticado", 401) };
+  }
+  const active = await prisma.user.findFirst({
+    where: { id: session.user.id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!active) {
     return { session: null, error: jsonError("No autenticado", 401) };
   }
   return { session, error: null };

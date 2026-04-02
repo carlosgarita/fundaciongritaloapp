@@ -12,5 +12,9 @@ export const updateHourLogStatusSchema = z.object({
   estado: z.enum(["validado", "rechazado"]),
 });
 
+export const volunteerCreateHourLogSchema = createHourLogSchema.omit({
+  volunteerId: true,
+});
+
 export type CreateHourLogData = z.infer<typeof createHourLogSchema>;
 export type UpdateHourLogStatusData = z.infer<typeof updateHourLogStatusSchema>;
