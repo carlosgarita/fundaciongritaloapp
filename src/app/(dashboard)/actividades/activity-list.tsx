@@ -190,10 +190,27 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
     resolver: zodResolver(activityFormSchema),
   });
 
+  /* Scroll al formulario solo en vista de escritorio (en móvil es panel a pantalla completa) */
   useEffect(() => {
-    if (formMode !== "closed" && formRef.current) {
-      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (formMode === "closed" || !formRef.current) return;
+    const mq = window.matchMedia("(min-width: 640px)");
+    if (!mq.matches) return;
+    formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [formMode]);
+
+  /* Evitar scroll de fondo cuando el formulario ocupa toda la pantalla en móvil */
+  useEffect(() => {
+    if (formMode === "closed") return;
+    const mq = window.matchMedia("(max-width: 639px)");
+    const sync = () => {
+      document.body.style.overflow = mq.matches ? "hidden" : "";
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => {
+      mq.removeEventListener("change", sync);
+      document.body.style.overflow = "";
+    };
   }, [formMode]);
 
   /* ---- Filtered list ---- */
@@ -387,23 +404,36 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
 
   return (
     <div className="space-y-6">
-      {/* ---- Inline form (create / edit) ---- */}
+      {/* ---- Formulario crear/editar: pantalla completa en móvil, bloque en escritorio ---- */}
       {formMode !== "closed" && (
-        <Card ref={formRef}>
-          <div className="flex items-center justify-between px-6 pt-6 pb-2">
-            <h2 className="text-lg font-bold text-text-primary">
-              {formMode === "edit" ? "Editar Actividad" : "Nueva Actividad"}
-            </h2>
-            <button
-              type="button"
-              onClick={closeForm}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer"
-              aria-label="Cerrar formulario"
+        <>
+          <button
+            type="button"
+            onClick={closeForm}
+            className="fixed inset-0 z-[60] bg-black/45 sm:hidden cursor-pointer"
+            aria-label="Cerrar formulario"
+          />
+          <div
+            className="fixed inset-0 z-[61] flex flex-col min-h-0 sm:static sm:z-auto sm:inset-auto sm:min-h-0"
+          >
+            <Card
+              ref={formRef}
+              className="flex flex-col flex-1 min-h-0 overflow-hidden max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:rounded-none max-sm:border-0 max-sm:shadow-xl sm:max-h-none sm:h-auto"
             >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <CardContent>
+              <div className="flex items-center justify-between px-4 sm:px-6 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-5 sm:pt-6 pb-2 gap-2 shrink-0 border-b border-border sm:border-0">
+                <h2 className="text-lg font-bold text-text-primary min-w-0 pr-2">
+                  {formMode === "edit" ? "Editar Actividad" : "Nueva Actividad"}
+                </h2>
+                <button
+                  type="button"
+                  onClick={closeForm}
+                  className="h-10 w-10 sm:h-8 sm:w-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-hover transition-colors cursor-pointer shrink-0 touch-manipulation"
+                  aria-label="Cerrar formulario"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <CardContent className="px-4 sm:px-6 flex-1 overflow-y-auto overscroll-y-contain min-h-0 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
@@ -481,19 +511,21 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
                 </div>
               )}
 
-              <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" variant="outline" onClick={closeForm}>
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+                <Button type="button" variant="outline" onClick={closeForm} className="w-full sm:w-auto">
                   Cancelar
                 </Button>
-                <Button type="submit" loading={loading}>
+                <Button type="submit" loading={loading} className="w-full sm:w-auto">
                   {formMode === "edit"
                     ? "Guardar Cambios"
                     : "Crear Actividad"}
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </>
       )}
 
       {/* ---- Toolbar: filters + search + create button ---- */}
