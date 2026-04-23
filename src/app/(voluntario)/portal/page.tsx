@@ -82,7 +82,7 @@ export default async function PortalHomePage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden">
           <CardHeader>
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-text-secondary">
@@ -93,6 +93,12 @@ export default async function PortalHomePage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold text-text-primary">{insignias}</p>
+            <Link
+              href="/portal/insignias"
+              className="mt-3 inline-flex text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline"
+            >
+              Ver detalle y reconocimientos
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -109,6 +115,12 @@ export default async function PortalHomePage() {
           className="inline-flex items-center justify-center rounded-lg border border-border text-text-primary px-4 py-2.5 text-sm font-medium hover:bg-surface-hover transition-colors"
         >
           Registrar horas
+        </Link>
+        <Link
+          href="/portal/insignias"
+          className="inline-flex items-center justify-center rounded-lg border border-amber-200 bg-amber-50/80 text-amber-950 px-4 py-2.5 text-sm font-medium hover:bg-amber-100 transition-colors"
+        >
+          Mis insignias
         </Link>
       </div>
     </div>

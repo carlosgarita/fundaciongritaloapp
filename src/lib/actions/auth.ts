@@ -1,6 +1,7 @@
 "use server";
 
 import { signIn, signOut } from "@/auth";
+import type { Prisma } from "@prisma/client";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -27,9 +28,10 @@ export async function loginAction(email: string, password: string) {
     }
     throw error;
   }
+  
 
   const user = await prisma.user.findFirst({
-    where: { email, deletedAt: null },
+    where: { email, deletedAt: null } as Prisma.UserWhereInput,
     select: { role: true },
   });
   if (!user) {

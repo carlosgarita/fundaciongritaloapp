@@ -5,9 +5,9 @@ import {
   ActivityType,
   EnrollmentStatus,
   HourLogStatus,
-  BadgeCriteria,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { CATALOG_BADGES, upsertCatalogBadges } from "./badge-catalog";
 
 const prisma = new PrismaClient();
 
@@ -41,24 +41,7 @@ async function main() {
     where: { nombre: { startsWith: "[Demo]" } },
   });
 
-  const badgeVoluntario = await prisma.badge.create({
-    data: {
-      nombre: "[Demo] Voluntario destacado",
-      descripcion: "Reconocimiento manual por impacto en la comunidad.",
-      icono: "⭐",
-      criterio: BadgeCriteria.especial,
-      valorCriterio: 0,
-    },
-  });
-  await prisma.badge.create({
-    data: {
-      nombre: "[Demo] 50 horas",
-      descripcion: "Meta de horas validadas (asignación manual en demo).",
-      icono: "⏱️",
-      criterio: BadgeCriteria.horas,
-      valorCriterio: 50,
-    },
-  });
+  await upsertCatalogBadges(prisma);
 
   const demoPassword = await bcrypt.hash("demo12345", 12);
 
@@ -206,12 +189,17 @@ async function main() {
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const midMonth = new Date(now.getFullYear(), now.getMonth(), 12);
 
-  await prisma.userBadge.create({
-    data: {
-      userId: v1.id,
-      badgeId: badgeVoluntario.id,
-    },
+  const badgeDemoMaria = await prisma.badge.findFirst({
+    where: { nombre: "Primeros pasos" },
   });
+  if (badgeDemoMaria) {
+    await prisma.userBadge.create({
+      data: {
+        userId: v1.id,
+        badgeId: badgeDemoMaria.id,
+      },
+    });
+  }
 
   await prisma.hourLog.createMany({
     data: [
@@ -246,6 +234,9 @@ async function main() {
 
   console.log("");
   console.log("Seed completado.");
+  console.log(
+    `  Insignias en catálogo: ${CATALOG_BADGES.length} (asignables desde /badges).`,
+  );
   console.log("  Admin:     admin@gritalo.org / admin123");
   console.log(`  Demo pass: *${DEMO_EMAIL_SUFFIX} → demo12345`);
   console.log(`    - ${v1.email}`);

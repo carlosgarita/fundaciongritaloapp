@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   Clock,
+  Award,
   LogOut,
   Menu,
   X,
@@ -29,6 +30,7 @@ const navItems = [
   { href: "/portal", label: "Inicio", icon: LayoutDashboard },
   { href: "/portal/actividades", label: "Actividades", icon: CalendarDays },
   { href: "/portal/horas", label: "Mis horas", icon: Clock },
+  { href: "/portal/insignias", label: "Mis insignias", icon: Award },
 ];
 
 function linkActive(pathname: string, href: string) {

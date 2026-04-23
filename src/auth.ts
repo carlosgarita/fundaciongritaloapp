@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth.config";
@@ -21,7 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: {
             email: credentials.email as string,
             deletedAt: null,
-          },
+          } as Prisma.UserWhereInput,
         });
 
         if (!user?.passwordHash) return null;
@@ -47,7 +48,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         const dbUser = await prisma.user.findFirst({
-          where: { id: user.id!, deletedAt: null },
+          where: {
+            id: user.id!,
+            deletedAt: null,
+          } as Prisma.UserWhereInput,
           select: { role: true, estado: true, nombre: true, apellido: true },
         });
         if (dbUser && user.id) {
