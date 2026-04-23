@@ -18,5 +18,32 @@ export const recoverySchema = z.object({
     .email("Correo inválido"),
 });
 
+export const resetPasswordClientSchema = z
+  .object({
+    password: z
+      .string()
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmPassword: z.string().min(1, "Confirma la contraseña"),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
+export const resetPasswordFormSchema = z
+  .object({
+    token: z.string().min(1, "Enlace inválido"),
+    password: z
+      .string()
+      .min(6, "La contraseña debe tener al menos 6 caracteres"),
+    confirmPassword: z.string().min(1, "Confirma la contraseña"),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type RecoveryFormData = z.infer<typeof recoverySchema>;
+export type ResetPasswordFormData = z.infer<typeof resetPasswordFormSchema>;
+export type ResetPasswordClientData = z.infer<typeof resetPasswordClientSchema>;

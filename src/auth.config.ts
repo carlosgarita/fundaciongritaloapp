@@ -16,7 +16,8 @@ export const authConfig = {
       const isLoggedIn = !!auth?.user;
       const isAuthPage =
         nextUrl.pathname.startsWith("/login") ||
-        nextUrl.pathname.startsWith("/recuperar");
+        nextUrl.pathname.startsWith("/recuperar") ||
+        nextUrl.pathname.startsWith("/restablecer-contrasena");
 
       if (isAuthPage) {
         if (isLoggedIn) {

@@ -9,6 +9,7 @@ import { LogoWithText } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { recoverySchema, type RecoveryFormData } from "@/lib/validations/auth";
+import { requestPasswordResetAction } from "@/lib/actions/password-reset";
 
 export default function RecoveryPage() {
   const [loading, setLoading] = useState(false);
@@ -25,13 +26,16 @@ export default function RecoveryPage() {
     defaultValues: { email: "" },
   });
 
-  async function onSubmit(_data: RecoveryFormData) {
+  async function onSubmit(data: RecoveryFormData) {
     setError("");
     setLoading(true);
 
     try {
-      // TODO: Implementar Server Action para enviar email de recuperación
-      // Por ahora mostramos el mensaje de éxito como placeholder
+      const result = await requestPasswordResetAction(data.email);
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
       setSent(true);
     } catch {
       setError("Error de conexión. Intente más tarde.");
@@ -54,13 +58,24 @@ export default function RecoveryPage() {
                 <CheckCircle2 className="h-8 w-8 text-accent-green" />
               </div>
               <h2 className="text-xl font-bold text-text-primary">
-                Correo enviado
+                Solicitud registrada
               </h2>
               <p className="text-sm text-text-secondary leading-relaxed">
-                Hemos enviado un enlace de recuperación a{" "}
-                <strong className="text-text-primary">{getValues("email")}</strong>.
-                Revisa tu bandeja de entrada y sigue las instrucciones.
+                Si existe una cuenta asociada a{" "}
+                <strong className="text-text-primary">{getValues("email")}</strong>,
+                recibirás un correo con un enlace para restablecer la contraseña
+                (válido por 1 hora). Revisa también la carpeta de spam.
               </p>
+              {process.env.NODE_ENV === "development" ? (
+                <p className="text-xs text-text-muted leading-relaxed">
+                  En desarrollo, si no hay SMTP configurado, el enlace aparece en
+                  la consola del servidor (
+                  <code className="text-xs bg-surface-secondary px-1 rounded">
+                    npm run dev
+                  </code>
+                  ).
+                </p>
+              ) : null}
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 text-sm text-primary-500 hover:text-primary-600 hover:underline mt-4"
