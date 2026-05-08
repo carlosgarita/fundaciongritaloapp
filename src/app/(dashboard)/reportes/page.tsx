@@ -31,12 +31,12 @@ export default async function ReportesPage() {
       kpis,
       exportRows,
     ] = await Promise.all([
-      ReportService.getValidatedHoursByMonth(6),
+      ReportService.getValidatedHoursByMonth(),
       ReportService.getActivitiesByType(),
       ReportService.getVolunteersByStatus(),
-      ReportService.getTopVolunteersByValidatedHours(8),
+      ReportService.getTopVolunteersByValidatedHours(),
       ReportService.getSummaryKpis(),
-      ReportService.getHoursExportRows(500),
+      ReportService.getHoursExportRows(),
     ]);
   } catch {
     // BD no disponible: el cliente muestra vacíos

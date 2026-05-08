@@ -85,9 +85,7 @@ function formatDate(iso: string) {
 
 const createFormSchema = z.object({
   email: z.string().email("Correo inválido"),
-  password: z
-    .string()
-    .min(6, "La contraseña debe tener al menos 6 caracteres"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   nombre: z.string().min(1, "El nombre es requerido"),
   apellido: z.string().min(1, "El apellido es requerido"),
   cedula: z.string(),
