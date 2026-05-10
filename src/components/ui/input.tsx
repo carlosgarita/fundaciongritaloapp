@@ -17,6 +17,11 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
 }
 
+/** Props sueltos del spread (`register()`, etc.); `ref` no está en `InputHTMLAttributes` con React 19. */
+type SpreadInputProps = InputHTMLAttributes<HTMLInputElement> & {
+  ref?: Ref<HTMLInputElement>;
+};
+
 function mergeInputRefs(
   ...refs: (Ref<HTMLInputElement> | undefined)[]
 ): Ref<HTMLInputElement> {
@@ -38,7 +43,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const isPassword = type === "password";
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
 
-    const { ref: propsRef, ...inputProps } = props as InputHTMLAttributes<HTMLInputElement>;
+    const { ref: propsRef, ...inputProps } = props as SpreadInputProps;
 
     return (
       <div className="w-full">
