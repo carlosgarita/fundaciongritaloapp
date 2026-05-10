@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import "@/lib/zod-locale";
 import "./globals.css";
 
 const inter = Inter({

@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const createVolunteerSchema = z.object({
-  email: z.string().email("Correo inválido"),
+  email: z
+    .string()
+    .min(1, "El correo electrónico es requerido")
+    .email("Correo inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   nombre: z.string().min(1, "El nombre es requerido"),
   apellido: z.string().min(1, "El apellido es requerido"),

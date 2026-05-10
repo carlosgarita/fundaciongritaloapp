@@ -56,7 +56,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <Input
-              label="Email"
+              label="Correo electrónico"
               type="email"
               placeholder="ejemplo@correo.com"
               icon={<Mail className="h-5 w-5" />}

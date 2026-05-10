@@ -14,15 +14,28 @@ export const createActivitySchema = z.object({
 });
 
 export const updateActivitySchema = z.object({
-  nombre: z.string().min(1).optional(),
+  nombre: z
+    .string()
+    .min(1, "El nombre es requerido")
+    .optional(),
   descripcion: z.string().optional(),
   tipo: z.enum([
     "social", "comunitario", "educacion", "ambiente",
     "salud", "comunicacion", "logistica", "otro",
   ]).optional(),
-  fechaInicio: z.string().datetime().optional(),
-  fechaCierre: z.string().datetime().optional(),
-  cuposTotales: z.number().int().min(1).optional(),
+  fechaInicio: z
+    .string()
+    .datetime({ message: "Fecha de inicio inválida" })
+    .optional(),
+  fechaCierre: z
+    .string()
+    .datetime({ message: "Fecha de cierre inválida" })
+    .optional(),
+  cuposTotales: z
+    .number()
+    .int()
+    .min(1, "Debe tener al menos 1 cupo")
+    .optional(),
   ubicacion: z.string().optional(),
   estado: z.enum(["borrador", "publicada", "finalizada", "cancelada"]).optional(),
 });

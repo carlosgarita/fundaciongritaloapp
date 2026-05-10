@@ -434,7 +434,7 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
                 </button>
               </div>
               <CardContent className="px-4 sm:px-6 flex-1 overflow-y-auto overscroll-y-contain min-h-0 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Nombre"

@@ -84,7 +84,10 @@ function formatDate(iso: string) {
 /* ------------------------------------------------------------------ */
 
 const createFormSchema = z.object({
-  email: z.string().email("Correo inválido"),
+  email: z
+    .string()
+    .min(1, "El correo electrónico es requerido")
+    .email("Correo inválido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   nombre: z.string().min(1, "El nombre es requerido"),
   apellido: z.string().min(1, "El apellido es requerido"),
@@ -309,6 +312,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
             <form
               onSubmit={createForm.handleSubmit(onCreateSubmit)}
               className="space-y-4"
+              noValidate
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
@@ -401,6 +405,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
             <form
               onSubmit={editForm.handleSubmit(onEditSubmit)}
               className="space-y-4"
+              noValidate
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input

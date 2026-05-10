@@ -33,6 +33,7 @@ export function AssignBadgeForm({
     <div className="space-y-3 max-w-3xl">
     <form
       className="flex flex-col sm:flex-row gap-3 sm:items-end"
+      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         setError("");

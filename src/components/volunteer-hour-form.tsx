@@ -70,7 +70,11 @@ export function VolunteerHourForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-lg">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-4 max-w-lg"
+      noValidate
+    >
       <div>
         <label
           htmlFor="activityId"

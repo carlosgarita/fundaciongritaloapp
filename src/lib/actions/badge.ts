@@ -6,8 +6,8 @@ import { z } from "zod";
 import { BadgeService } from "@/lib/services/badge.service";
 
 const assignSchema = z.object({
-  userId: z.string().min(1),
-  badgeId: z.string().min(1),
+  userId: z.string().min(1, "El voluntario es requerido"),
+  badgeId: z.string().min(1, "La insignia es requerida"),
 });
 
 export async function assignBadgeAction(input: Record<string, unknown>) {
