@@ -332,7 +332,9 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Correo electrónico"
-                  type="email"
+                  type="text"
+                  inputMode="email"
+                  autoComplete="email"
                   placeholder="correo@ejemplo.com"
                   icon={<Mail className="h-5 w-5" />}
                   error={createForm.formState.errors.email?.message}
@@ -376,7 +378,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
                 <Button type="button" variant="outline" onClick={closeForm}>
                   Cancelar
                 </Button>
-                <Button type="submit" loading={loading}>
+                <Button type="submit" formNoValidate loading={loading}>
                   Registrar Voluntario
                 </Button>
               </div>
@@ -455,7 +457,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
                 <Button type="button" variant="outline" onClick={closeForm}>
                   Cancelar
                 </Button>
-                <Button type="submit" loading={loading}>
+                <Button type="submit" formNoValidate loading={loading}>
                   Guardar Cambios
                 </Button>
               </div>

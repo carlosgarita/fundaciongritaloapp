@@ -1,6 +1,13 @@
 "use client";
 
-import { forwardRef, type InputHTMLAttributes, useId, useState } from "react";
+import {
+  forwardRef,
+  type InputHTMLAttributes,
+  type MutableRefObject,
+  type Ref,
+  useId,
+  useState,
+} from "react";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -10,14 +17,28 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
 }
 
+function mergeInputRefs(
+  ...refs: (Ref<HTMLInputElement> | undefined)[]
+): Ref<HTMLInputElement> {
+  return (el) => {
+    for (const r of refs) {
+      if (r == null) continue;
+      if (typeof r === "function") r(el);
+      else (r as MutableRefObject<HTMLInputElement | null>).current = el;
+    }
+  };
+}
+
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, icon, type, id: externalId, ...props }, ref) => {
+  ({ className, label, error, icon, type = "text", id: externalId, ...props }, forwardedRef) => {
     const generatedId = useId();
     const inputId = externalId ?? generatedId;
     const errorId = error ? `${inputId}-error` : undefined;
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === "password";
     const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+
+    const { ref: propsRef, ...inputProps } = props as InputHTMLAttributes<HTMLInputElement>;
 
     return (
       <div className="w-full">
@@ -33,9 +54,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             </div>
           )}
           <input
-            ref={ref}
             id={inputId}
-            type={inputType}
             aria-invalid={error ? true : undefined}
             aria-describedby={errorId}
             className={cn(
@@ -48,7 +67,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 : "border-border",
               className
             )}
-            {...props}
+            {...inputProps}
+            ref={mergeInputRefs(propsRef, forwardedRef)}
+            type={inputType}
           />
           {isPassword && (
             <button

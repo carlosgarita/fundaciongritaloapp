@@ -97,7 +97,8 @@ export default function RecoveryPage() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
                 <Input
                   label="Correo Electrónico"
-                  type="email"
+                  type="text"
+                  inputMode="email"
                   placeholder="ejemplo@correo.com"
                   icon={<Mail className="h-5 w-5" />}
                   error={errors.email?.message}
@@ -114,6 +115,7 @@ export default function RecoveryPage() {
 
                 <Button
                   type="submit"
+                  formNoValidate
                   loading={loading}
                   className="w-full h-12 text-base rounded-xl"
                   size="lg"

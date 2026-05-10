@@ -57,7 +57,8 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             <Input
               label="Correo electrónico"
-              type="email"
+              type="text"
+              inputMode="email"
               placeholder="ejemplo@correo.com"
               icon={<Mail className="h-5 w-5" />}
               error={errors.email?.message}
@@ -84,6 +85,7 @@ export default function LoginPage() {
 
             <Button
               type="submit"
+              formNoValidate
               loading={loading}
               className="w-full h-12 text-base rounded-xl mt-2"
               size="lg"
