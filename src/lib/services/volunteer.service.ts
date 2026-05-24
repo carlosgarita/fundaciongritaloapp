@@ -131,7 +131,7 @@ export class VolunteerService {
         cedula: input.cedula,
         telefono: input.telefono ?? "",
         role: "voluntario",
-        estado: "pendiente",
+        estado: "activo",
         habilidades: input.habilidades ?? [],
         ...(avatarTrim ? { avatarUrl: avatarTrim } : {}),
       },

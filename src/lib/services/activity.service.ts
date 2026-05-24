@@ -165,6 +165,7 @@ export class ActivityService {
         cuposDisponibles: input.cuposTotales,
         ubicacion: input.ubicacion ?? "",
         createdById: input.createdById,
+        estado: "publicada",
       },
     });
   }
