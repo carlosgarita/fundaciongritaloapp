@@ -231,6 +231,8 @@ model Badge {
   createdAt     DateTime      @default(now())
 
   userBadges UserBadge[]
+
+  @@unique([nombre])
 }
 
 model UserBadge {

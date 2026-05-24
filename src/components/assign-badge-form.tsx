@@ -24,7 +24,7 @@ export function AssignBadgeForm({
       <p className="text-sm text-text-secondary">
         {volunteers.length === 0
           ? "No hay voluntarios en el sistema."
-          : "No hay insignias definidas. Ejecuta el seed o crea insignias en la base de datos."}
+          : 'No hay insignias definidas todavía. Cree la primera con el botón «Agregar insignia» o ejecute el seed del proyecto.'}
       </p>
     );
   }
