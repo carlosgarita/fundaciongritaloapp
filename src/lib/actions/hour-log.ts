@@ -26,12 +26,13 @@ export async function validateHourLogAction(
   }
 
   try {
-    await HourLogService.updateStatus(hourLogId, {
+    const updated = await HourLogService.updateStatus(hourLogId, {
       estado: parsed.data.estado,
       validatedById: session.user.id,
     });
     revalidatePath("/horas");
     revalidatePath("/panel");
+    revalidatePath(`/actividades/${updated.activityId}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };
@@ -70,6 +71,7 @@ export async function submitHourLogVolunteerAction(
     });
     revalidatePath("/portal");
     revalidatePath("/portal/horas");
+    revalidatePath(`/actividades/${parsed.data.activityId}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };

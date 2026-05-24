@@ -19,6 +19,7 @@ export default async function DashboardLayout({
       nombre: true,
       apellido: true,
       email: true,
+      avatarUrl: true,
     },
   });
   if (!me || me.deletedAt) redirect("/login");
@@ -28,6 +29,7 @@ export default async function DashboardLayout({
     nombre: me.nombre ?? "",
     apellido: me.apellido ?? "",
     email: me.email ?? "",
+    avatarUrl: me.avatarUrl,
   };
 
   return (

@@ -55,6 +55,7 @@ export async function updateVolunteerAction(
   try {
     await VolunteerService.update(id, parsed.data);
     revalidatePath("/voluntarios");
+    revalidatePath(`/voluntarios/${id}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };
@@ -70,6 +71,7 @@ export async function deleteVolunteerAction(id: string) {
   try {
     await VolunteerService.delete(id);
     revalidatePath("/voluntarios");
+    revalidatePath(`/voluntarios/${id}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };

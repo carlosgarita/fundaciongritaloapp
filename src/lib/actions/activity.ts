@@ -58,6 +58,7 @@ export async function updateActivityAction(
   try {
     await ActivityService.update(id, parsed.data);
     revalidatePath("/actividades");
+    revalidatePath(`/actividades/${id}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };
@@ -73,6 +74,7 @@ export async function deleteActivityAction(id: string) {
   try {
     await ActivityService.delete(id);
     revalidatePath("/actividades");
+    revalidatePath(`/actividades/${id}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };

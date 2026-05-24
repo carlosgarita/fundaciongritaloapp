@@ -19,6 +19,7 @@ export default async function PortalLayout({
       nombre: true,
       apellido: true,
       email: true,
+      avatarUrl: true,
     },
   });
   if (!me || me.deletedAt) redirect("/login");
@@ -29,6 +30,7 @@ export default async function PortalLayout({
     nombre: me.nombre ?? "",
     apellido: me.apellido ?? "",
     email: me.email ?? "",
+    avatarUrl: me.avatarUrl,
   };
 
   return (

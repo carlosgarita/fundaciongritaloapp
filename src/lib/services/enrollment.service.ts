@@ -87,6 +87,8 @@ export class EnrollmentService {
         where: { id: activity.id },
         data: { cuposDisponibles: nextCupos },
       });
+
+      return { activityId: activity.id };
     });
   }
 }

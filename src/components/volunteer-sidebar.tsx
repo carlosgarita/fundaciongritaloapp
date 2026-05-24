@@ -15,11 +15,13 @@ import {
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth";
 import { useState } from "react";
+import { UserAvatar } from "@/components/user-avatar";
 
 interface VolunteerSidebarProfile {
   nombre: string;
   apellido: string;
   email: string;
+  avatarUrl?: string | null;
 }
 
 interface VolunteerSidebarProps {
@@ -41,10 +43,6 @@ function linkActive(pathname: string, href: string) {
 export function VolunteerSidebar({ profile }: VolunteerSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  const initials =
-    (profile.nombre?.[0] || "") + (profile.apellido?.[0] || "") ||
-    profile.email[0].toUpperCase();
 
   async function handleLogout() {
     await logoutAction();
@@ -92,9 +90,14 @@ export function VolunteerSidebar({ profile }: VolunteerSidebarProps) {
 
       <div className="p-4 border-t border-surface/10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 rounded-full bg-accent-green flex items-center justify-center text-text-inverse text-sm font-bold">
-            {initials}
-          </div>
+          <UserAvatar
+            nombre={profile.nombre}
+            apellido={profile.apellido}
+            email={profile.email}
+            avatarUrl={profile.avatarUrl}
+            className="h-9 w-9 shrink-0"
+            initialsClassName="bg-accent-green text-text-inverse text-sm font-bold flex items-center justify-center"
+          />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-text-inverse truncate">
               {profile.nombre} {profile.apellido}

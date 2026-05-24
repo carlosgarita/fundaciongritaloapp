@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -600,9 +601,12 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
                   className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors"
                 >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-text-primary">
+                    <Link
+                      href={`/actividades/${activity.id}`}
+                      className="font-medium text-text-primary hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-sm inline-block text-left"
+                    >
                       {activity.nombre}
-                    </p>
+                    </Link>
                     {activity.ubicacion && (
                       <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
                         <MapPin className="h-3 w-3" />

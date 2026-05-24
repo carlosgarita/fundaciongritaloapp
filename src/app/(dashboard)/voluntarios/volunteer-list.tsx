@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from "next/link";
 import {
   Plus,
   Pencil,
@@ -25,6 +26,7 @@ import {
   updateVolunteerAction,
   deleteVolunteerAction,
 } from "@/lib/actions/volunteer";
+import { UserAvatar } from "@/components/user-avatar";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -83,18 +85,40 @@ function formatDate(iso: string) {
 /*  Form schemas                                                       */
 /* ------------------------------------------------------------------ */
 
-const createFormSchema = z.object({
-  email: z
-    .string()
-    .min(1, "El correo electrónico es requerido")
-    .email("Correo inválido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  nombre: z.string().min(1, "El nombre es requerido"),
-  apellido: z.string().min(1, "El apellido es requerido"),
-  cedula: z.string(),
-  telefono: z.string(),
-  habilidades: z.string(),
-});
+const createFormSchema = z
+  .object({
+    email: z
+      .string()
+      .min(1, "El correo electrónico es requerido")
+      .email("Correo inválido"),
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+    nombre: z.string().min(1, "El nombre es requerido"),
+    apellido: z.string().min(1, "El apellido es requerido"),
+    cedula: z.string(),
+    telefono: z.string(),
+    habilidades: z.string(),
+    avatarUrl: z.string().max(2048).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const raw = data.avatarUrl?.trim();
+    if (!raw) return;
+    try {
+      const u = new URL(raw);
+      if (u.protocol !== "http:" && u.protocol !== "https:") {
+        ctx.addIssue({
+          code: "custom",
+          message: "La URL debe comenzar con http:// o https://",
+          path: ["avatarUrl"],
+        });
+      }
+    } catch {
+      ctx.addIssue({
+        code: "custom",
+        message: "URL de imagen inválida",
+        path: ["avatarUrl"],
+      });
+    }
+  });
 
 const editFormSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
@@ -169,6 +193,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
       cedula: "",
       telefono: "",
       habilidades: "",
+      avatarUrl: "",
     });
     setFormMode("create");
   }
@@ -215,6 +240,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
         cedula: data.cedula || undefined,
         telefono: data.telefono || undefined,
         habilidades: parseHabilidades(data.habilidades),
+        avatarUrl: data.avatarUrl?.trim() || undefined,
       });
 
       if (result.success) {
@@ -371,6 +397,20 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
                 error={createForm.formState.errors.habilidades?.message}
                 {...createForm.register("habilidades")}
               />
+
+              <div>
+                <Input
+                  label="URL de la imagen (CDN / Enlace Directo .jpg .png)"
+                  type="text"
+                  placeholder="https://…"
+                  error={createForm.formState.errors.avatarUrl?.message}
+                  {...createForm.register("avatarUrl")}
+                />
+                <p className="mt-1.5 text-xs text-text-muted">
+                  Sugerencia: Suba la imagen a Postimages.org y pegue aquí el
+                  &apos;Enlace directo&apos; terminado en formato de imagen.
+                </p>
+              </div>
 
               {errorBanner}
 
@@ -539,14 +579,21 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 text-xs font-bold shrink-0">
-                        {(vol.nombre[0] ?? "").toUpperCase()}
-                        {(vol.apellido[0] ?? "").toUpperCase()}
-                      </div>
+                      <UserAvatar
+                        nombre={vol.nombre}
+                        apellido={vol.apellido}
+                        email={vol.email}
+                        avatarUrl={vol.avatarUrl}
+                        className="h-8 w-8 shrink-0"
+                        initialsClassName="bg-primary-50 text-primary-600"
+                      />
                       <div>
-                        <p className="font-medium text-text-primary">
+                        <Link
+                          href={`/voluntarios/${vol.id}`}
+                          className="font-medium text-text-primary hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-sm inline-block text-left"
+                        >
                           {vol.nombre} {vol.apellido}
-                        </p>
+                        </Link>
                         {vol.habilidades.length > 0 && (
                           <p className="text-xs text-text-muted truncate max-w-[200px]">
                             {vol.habilidades.join(", ")}

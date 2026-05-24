@@ -89,6 +89,70 @@ export class ActivityService {
     });
   }
 
+  /** Detalle administrativo con inscripciones ordenadas y agregados de horas registradas. */
+  static async findAdminDetail(id: string) {
+    const activity = await prisma.activity.findFirst({
+      where: { id, ...notDeleted },
+      include: {
+        createdBy: {
+          select: { id: true, nombre: true, apellido: true, email: true },
+        },
+        enrollments: {
+          include: {
+            volunteer: {
+              select: {
+                id: true,
+                nombre: true,
+                apellido: true,
+                email: true,
+                cedula: true,
+                estado: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    if (!activity) return null;
+
+    const [horasAgg, registrosPorEstado] = await Promise.all([
+      prisma.hourLog.aggregate({
+        where: {
+          activityId: id,
+          estado: "validado",
+          deletedAt: null,
+        },
+        _sum: { horas: true },
+      }),
+      prisma.hourLog.groupBy({
+        by: ["estado"],
+        where: {
+          activityId: id,
+          deletedAt: null,
+        },
+        _count: { id: true },
+      }),
+    ]);
+
+    const horasValidadas = horasAgg._sum.horas
+      ? Number(horasAgg._sum.horas)
+      : 0;
+
+    const registrosPorEstadoMap = Object.fromEntries(
+      registrosPorEstado.map((r) => [r.estado, r._count.id]),
+    ) as Partial<Record<"pendiente" | "validado" | "rechazado", number>>;
+
+    return {
+      ...activity,
+      horasValidadas,
+      registrosPendientes: registrosPorEstadoMap.pendiente ?? 0,
+      registrosValidadosCount: registrosPorEstadoMap.validado ?? 0,
+      registrosRechazadosCount: registrosPorEstadoMap.rechazado ?? 0,
+    };
+  }
+
   static async create(input: CreateActivityInput) {
     return prisma.activity.create({
       data: {

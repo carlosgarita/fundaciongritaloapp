@@ -11,6 +11,7 @@ export interface CreateVolunteerInput {
   cedula?: string;
   telefono?: string;
   habilidades?: string[];
+  avatarUrl?: string;
 }
 
 export interface UpdateVolunteerInput {
@@ -37,7 +38,60 @@ const VOLUNTEER_SELECT = {
   updatedAt: true,
 } as const;
 
+const ACTIVITY_CARD_SELECT = {
+  id: true,
+  nombre: true,
+  tipo: true,
+  fechaInicio: true,
+  fechaCierre: true,
+  estado: true,
+} as const;
+
 export class VolunteerService {
+  static async findAdminDetail(id: string) {
+    const user = await prisma.user.findFirst({
+      where: { id, role: "voluntario", ...notDeleted },
+      select: {
+        ...VOLUNTEER_SELECT,
+        enrollments: {
+          where: {
+            activity: notDeleted,
+          },
+          select: {
+            id: true,
+            estado: true,
+            createdAt: true,
+            activity: { select: ACTIVITY_CARD_SELECT },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        userBadges: {
+          orderBy: { earnedAt: "desc" },
+          include: {
+            badge: true,
+          },
+        },
+      },
+    });
+
+    if (!user) return null;
+
+    const hoursAgg = await prisma.hourLog.aggregate({
+      where: {
+        volunteerId: id,
+        estado: "validado",
+        ...notDeleted,
+      },
+      _sum: { horas: true },
+    });
+
+    const horasAcumuladas = hoursAgg._sum.horas
+      ? Number(hoursAgg._sum.horas)
+      : 0;
+
+    return { ...user, horasAcumuladas };
+  }
+
   static async findAll(filters?: { estado?: VolunteerStatus }) {
     return prisma.user.findMany({
       where: {
@@ -66,6 +120,7 @@ export class VolunteerService {
     }
 
     const passwordHash = await bcrypt.hash(input.password, 12);
+    const avatarTrim = input.avatarUrl?.trim();
 
     return prisma.user.create({
       data: {
@@ -78,6 +133,7 @@ export class VolunteerService {
         role: "voluntario",
         estado: "pendiente",
         habilidades: input.habilidades ?? [],
+        ...(avatarTrim ? { avatarUrl: avatarTrim } : {}),
       },
       select: VOLUNTEER_SELECT,
     });

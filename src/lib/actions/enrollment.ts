@@ -43,6 +43,7 @@ export async function enrollVolunteerAction(
       (parsed.data.estado as EnrollmentStatus) ?? "inscrito",
     );
     revalidatePath("/actividades");
+    revalidatePath(`/actividades/${parsed.data.activityId}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };
@@ -94,8 +95,11 @@ export async function unenrollVolunteerAction(enrollmentId: string) {
   }
 
   try {
-    await EnrollmentService.unenroll(parsed.data.enrollmentId);
+    const { activityId } = await EnrollmentService.unenroll(
+      parsed.data.enrollmentId,
+    );
     revalidatePath("/actividades");
+    revalidatePath(`/actividades/${activityId}`);
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };
