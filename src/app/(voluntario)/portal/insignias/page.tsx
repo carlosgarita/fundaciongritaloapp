@@ -27,7 +27,7 @@ function criterioDetalle(c: BadgeCriteria, valor: number): string | null {
     return `Referencia: ${valor} actividades`;
   }
   if (c === "antiguedad" && valor > 0) {
-    return `Referencia: ${valor} meses de participación`;
+    return `Referencia: ${valor} días desde el alta`;
   }
   return null;
 }

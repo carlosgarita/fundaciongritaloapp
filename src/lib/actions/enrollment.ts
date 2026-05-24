@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { EnrollmentService } from "@/lib/services/enrollment.service";
+import { BadgeRulesService } from "@/lib/services/badge-rules.service";
 import {
   enrollVolunteerSchema,
   unenrollSchema,
@@ -42,8 +43,16 @@ export async function enrollVolunteerAction(
       parsed.data.volunteerId,
       (parsed.data.estado as EnrollmentStatus) ?? "inscrito",
     );
+    await BadgeRulesService.evaluateAutomaticBadgesForVolunteer(
+      parsed.data.volunteerId,
+    );
     revalidatePath("/actividades");
     revalidatePath(`/actividades/${parsed.data.activityId}`);
+    revalidatePath("/portal/progreso");
+    revalidatePath("/portal/insignias");
+    revalidatePath("/portal");
+    revalidatePath("/badges");
+    revalidatePath("/voluntarios");
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };
@@ -72,8 +81,12 @@ export async function enrollSelfAction(activityId: string) {
 
   try {
     await EnrollmentService.enroll(parsed.data.activityId, session.user.id);
+    await BadgeRulesService.evaluateAutomaticBadgesForVolunteer(session.user.id);
     revalidatePath("/portal");
     revalidatePath("/portal/actividades");
+    revalidatePath("/portal/insignias");
+    revalidatePath("/portal/progreso");
+    revalidatePath("/badges");
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };

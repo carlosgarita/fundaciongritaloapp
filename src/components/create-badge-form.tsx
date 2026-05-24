@@ -141,7 +141,7 @@ export function CreateBadgeForm({
             ? "Ej. 50 = referencia hasta alcanzar 50 horas validadas (automático en el futuro)."
             : criterio === "actividades"
               ? "Ej. 5 = tras participar en 5 actividades distintas (referencia para reglas)."
-              : "Ej. 6 = tras 6 meses de trayectoria (referencia para reglas)."}
+            : "Ej. 180 = después de acumular 180 días naturales en la plataforma (desde su fecha de alta)."}
       </p>
 
       {serverError ? (

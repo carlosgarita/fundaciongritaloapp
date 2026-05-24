@@ -8,6 +8,7 @@ import {
   CalendarDays,
   Clock,
   Award,
+  LineChart,
   LogOut,
   Menu,
   X,
@@ -32,6 +33,7 @@ const navItems = [
   { href: "/portal", label: "Inicio", icon: LayoutDashboard },
   { href: "/portal/actividades", label: "Actividades", icon: CalendarDays },
   { href: "/portal/horas", label: "Mis horas", icon: Clock },
+  { href: "/portal/progreso", label: "Tu progreso", icon: LineChart },
   { href: "/portal/insignias", label: "Mis insignias", icon: Award },
 ];
 

@@ -140,7 +140,7 @@ export function EditBadgeForm({ badge, onCancel, onSaved }: EditBadgeFormProps) 
             ? "Ej. 50 = referencia hasta alcanzar 50 horas validadas."
             : criterio === "actividades"
               ? "Ej. 5 = referencia tras 5 actividades distintas."
-              : "Ej. 6 = referencia tras 6 meses de trayectoria."}
+              : "Ej. 180 = tras acumular 180 días naturales en la plataforma desde su alta."}
       </p>
 
       {serverError ? (

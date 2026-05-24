@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { HourLogService } from "@/lib/services/hour-log.service";
+import { BadgeRulesService } from "@/lib/services/badge-rules.service";
 import {
   volunteerCreateHourLogSchema,
   updateHourLogStatusSchema,
@@ -30,9 +31,19 @@ export async function validateHourLogAction(
       estado: parsed.data.estado,
       validatedById: session.user.id,
     });
+    if (parsed.data.estado === "validado") {
+      await BadgeRulesService.evaluateAutomaticBadgesForVolunteer(
+        updated.volunteerId,
+      );
+    }
     revalidatePath("/horas");
     revalidatePath("/panel");
     revalidatePath(`/actividades/${updated.activityId}`);
+    revalidatePath("/portal");
+    revalidatePath("/portal/insignias");
+    revalidatePath("/portal/progreso");
+    revalidatePath("/badges");
+    revalidatePath("/voluntarios");
     return { success: true as const };
   } catch (e) {
     return { success: false as const, error: (e as Error).message };

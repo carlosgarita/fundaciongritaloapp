@@ -12,7 +12,7 @@ export const BADGE_CRITERIA_OPTIONS = [
   { value: "especial", label: "Especial · reconocimiento manual" },
   { value: "horas", label: "Horas de voluntariado (umbral)" },
   { value: "actividades", label: "Actividades participadas (umbral)" },
-  { value: "antiguedad", label: "Antigüedad / trayectoria (referencia en meses)" },
+  { value: "antiguedad", label: "Antigüedad en la plataforma (umbral en días)" },
 ] satisfies { value: (typeof BADGE_CRITERIA)[number]; label: string }[];
 
 export const badgeIdSchema = z.string().min(1, "Identificador de insignia inválido");

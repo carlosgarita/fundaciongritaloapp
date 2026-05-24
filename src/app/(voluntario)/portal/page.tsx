@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Clock, CalendarDays, Award } from "lucide-react";
 import { HourLogService } from "@/lib/services/hour-log.service";
+import { BadgeRulesService } from "@/lib/services/badge-rules.service";
 import { BadgeService } from "@/lib/services/badge.service";
 import Link from "next/link";
 
@@ -14,6 +15,10 @@ export default async function PortalHomePage() {
   let insignias = 0;
 
   try {
+    if (userId) {
+      await BadgeRulesService.evaluateAutomaticBadgesForVolunteer(userId);
+    }
+
     const [logs, badges] = await Promise.all([
       HourLogService.findAll({ volunteerId: userId }),
       BadgeService.listForUser(userId),
@@ -115,6 +120,12 @@ export default async function PortalHomePage() {
           className="inline-flex items-center justify-center rounded-lg border border-border text-text-primary px-4 py-2.5 text-sm font-medium hover:bg-surface-hover transition-colors"
         >
           Registrar horas
+        </Link>
+        <Link
+          href="/portal/progreso"
+          className="inline-flex items-center justify-center rounded-lg border border-border text-text-primary px-4 py-2.5 text-sm font-medium hover:bg-surface-hover transition-colors"
+        >
+          Tu progreso y métricas
         </Link>
         <Link
           href="/portal/insignias"

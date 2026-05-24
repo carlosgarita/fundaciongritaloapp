@@ -54,8 +54,10 @@ export default async function BadgesAdminPage() {
           Insignias
         </h1>
         <p className="text-text-secondary mt-1">
-          Administre el catálogo de insignias y asígnelas manualmente a voluntarios.
-          Las reglas automáticas por umbral pueden añadirse más adelante.
+          El catálogo sirve tanto para insignias concedidas sólo desde el equipo
+          (criterio &quot;Especial&quot;) como para insignias otorgadas
+          automáticamente cuando un voluntario alcanza horas validadas total,
+          actividades distintas o días en la plataforma según cada umbral.
         </p>
       </div>
 
