@@ -39,7 +39,7 @@ const CHART_COLORS = [
   "#eab308",
 ];
 
-export interface HoursByMonthRow {
+export interface HoursByPeriodRow {
   key: string;
   label: string;
   horas: number;
@@ -82,22 +82,51 @@ export interface ExportHourRow {
 }
 
 interface ReportsDashboardProps {
-  hoursByMonth: HoursByMonthRow[];
+  hoursByPeriod: HoursByPeriodRow[];
   activitiesByType: ActivityTypeRow[];
   volunteersByStatus: VolunteerStatusRow[];
   topVolunteers: TopVolunteerRow[];
   kpis: ReportKpis;
   exportRows: ExportHourRow[];
+  fromIso: string;
+  toIso: string;
+  granularity: "day" | "month" | "year";
+  activeActivityName: string | null;
+  activeVolunteerName: string | null;
+}
+
+const GRANULARITY_LABEL: Record<"day" | "month" | "year", string> = {
+  day: "diaria",
+  month: "mensual",
+  year: "anual",
+};
+
+function formatLongDateUtc(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return d.toLocaleDateString("es-CR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export function ReportsDashboard({
-  hoursByMonth,
+  hoursByPeriod,
   activitiesByType,
   volunteersByStatus,
   topVolunteers,
   kpis,
   exportRows,
+  fromIso,
+  toIso,
+  granularity,
+  activeActivityName,
+  activeVolunteerName,
 }: ReportsDashboardProps) {
+  const rangeLabel = `${formatLongDateUtc(fromIso)} – ${formatLongDateUtc(toIso)}`;
   const pieTypeData = useMemo(
     () =>
       activitiesByType.map((r) => ({
@@ -117,17 +146,40 @@ export function ReportsDashboard({
   );
 
   const exportExcel = useCallback(() => {
-    const ws = XLSX.utils.json_to_sheet(
-      exportRows.map((r) => ({
-        Fecha: r.fecha,
-        Voluntario: r.voluntario,
-        Email: r.email,
-        Actividad: r.actividad,
-        Horas: r.horas,
-        Estado: r.estado,
-        Notas: r.notas,
-      })),
-    );
+    const headers = [
+      "Fecha",
+      "Voluntario",
+      "Email",
+      "Actividad",
+      "Horas",
+      "Estado",
+      "Notas",
+    ] as const;
+
+    const data =
+      exportRows.length > 0
+        ? exportRows.map((r) => ({
+            Fecha: r.fecha,
+            Voluntario: r.voluntario,
+            Email: r.email,
+            Actividad: r.actividad,
+            Horas: r.horas,
+            Estado: r.estado,
+            Notas: r.notas,
+          }))
+        : [
+            {
+              Fecha: "",
+              Voluntario: "",
+              Email: "",
+              Actividad: "",
+              Horas: "",
+              Estado: "Sin registros para el filtro actual",
+              Notas: "",
+            },
+          ];
+
+    const ws = XLSX.utils.json_to_sheet(data, { header: [...headers] });
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Horas");
     const name = `reporte-horas-${new Date().toISOString().slice(0, 10)}.xlsx`;
@@ -146,7 +198,10 @@ export function ReportsDashboard({
       startY: 32,
       head: [["Indicador", "Valor"]],
       body: [
-        ["Horas validadas (año en curso)", String(kpis.totalHorasValidadasAnio)],
+        ["Período del reporte", rangeLabel],
+        ["Proyecto", activeActivityName ?? "Todos los proyectos"],
+        ["Voluntario", activeVolunteerName ?? "Todos los voluntarios"],
+        ["Horas validadas en el período", String(kpis.totalHorasValidadasAnio)],
         ["Actividades publicadas", String(kpis.actividadesPublicadas)],
         [
           "Registros de horas pendientes de validación",
@@ -175,10 +230,17 @@ export function ReportsDashboard({
     });
 
     doc.save(`reporte-resumen-${new Date().toISOString().slice(0, 10)}.pdf`);
-  }, [kpis, topVolunteers]);
+  }, [
+    kpis,
+    topVolunteers,
+    rangeLabel,
+    activeActivityName,
+    activeVolunteerName,
+  ]);
 
-  const hasHoursData = hoursByMonth.some((h) => h.horas > 0);
+  const hasHoursData = hoursByPeriod.some((h) => h.horas > 0);
   const hasTypeData = activitiesByType.some((t) => t.count > 0);
+  const totalHoursInChart = hoursByPeriod.reduce((acc, h) => acc + h.horas, 0);
 
   return (
     <div className="space-y-8">
@@ -189,6 +251,12 @@ export function ReportsDashboard({
             Indicadores de participación y horas validadas. Exporta el detalle
             en Excel o un resumen en PDF.
           </p>
+          <p className="text-xs text-text-muted mt-2">
+            {rangeLabel}
+            {activeActivityName ? ` · proyecto «${activeActivityName}»` : ""}
+            {activeVolunteerName ? ` · voluntario «${activeVolunteerName}»` : ""}
+            .
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -196,7 +264,11 @@ export function ReportsDashboard({
             variant="outline"
             icon={<FileSpreadsheet className="h-4 w-4" />}
             onClick={exportExcel}
-            disabled={exportRows.length === 0}
+            title={
+              exportRows.length === 0
+                ? "Sin registros para el filtro actual; se descargará un archivo vacío"
+                : undefined
+            }
           >
             Excel
           </Button>
@@ -216,7 +288,7 @@ export function ReportsDashboard({
           <CardHeader>
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-text-secondary">
-                Horas validadas (año)
+                Horas validadas (período)
               </p>
               <Clock className="h-5 w-5 text-primary-500" />
             </div>
@@ -263,16 +335,16 @@ export function ReportsDashboard({
         <Card>
           <CardHeader>
             <p className="text-sm font-bold text-text-primary">
-              Horas validadas por mes
+              Horas validadas por periodo
             </p>
             <p className="text-xs text-text-muted mt-1">
-              Últimos 6 meses (registros no eliminados)
+              Granularidad {GRANULARITY_LABEL[granularity]} · {totalHoursInChart.toFixed(1)} h totales
             </p>
           </CardHeader>
           <CardContent className="h-72 pt-2">
             {hasHoursData ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={hoursByMonth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <BarChart data={hoursByPeriod} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                   <XAxis dataKey="label" tick={{ fontSize: 11 }} className="text-text-muted" />
                   <YAxis tick={{ fontSize: 11 }} allowDecimals />

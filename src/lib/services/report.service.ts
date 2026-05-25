@@ -1,68 +1,162 @@
 import { prisma } from "@/lib/prisma";
 import { notDeleted } from "@/lib/soft-delete";
 import { ACTIVITY_TYPE_LABELS, VOLUNTEER_STATUS_LABELS } from "@/lib/types";
-import type { VolunteerStatus } from "@prisma/client";
+import type { Prisma, VolunteerStatus } from "@prisma/client";
 
-const MONTHS_SPAN = 6;
+export type ReportGranularity = "day" | "month" | "year";
 
-function monthKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+export interface ReportFilters {
+  from: Date;
+  to: Date;
+  activityId?: string;
+  volunteerId?: string;
 }
 
-function monthLabel(key: string): string {
-  const [y, m] = key.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("es-CR", {
-    month: "short",
-    year: "numeric",
-  });
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const MONTH_LABELS = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
+
+export function pickGranularity(from: Date, to: Date): ReportGranularity {
+  const days = Math.round((to.getTime() - from.getTime()) / DAY_MS) + 1;
+  if (days <= 31) return "day";
+  if (days <= 24 * 31) return "month";
+  return "year";
+}
+
+function rangeBound(from: Date, to: Date): { gte: Date; lt: Date } {
+  return { gte: from, lt: new Date(to.getTime() + DAY_MS) };
+}
+
+function buildHourLogWhere(
+  filters: ReportFilters,
+  estado?: "validado" | "pendiente" | "rechazado",
+): Prisma.HourLogWhereInput {
+  const where: Prisma.HourLogWhereInput = {
+    ...notDeleted,
+    volunteer: notDeleted,
+    activity: notDeleted,
+    fecha: rangeBound(filters.from, filters.to),
+  };
+  if (estado) where.estado = estado;
+  if (filters.activityId) where.activityId = filters.activityId;
+  if (filters.volunteerId) where.volunteerId = filters.volunteerId;
+  return where;
+}
+
+function dayKey(d: Date) {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+}
+function dayLabel(d: Date) {
+  return `${d.getUTCDate()} ${MONTH_LABELS[d.getUTCMonth()]}`;
+}
+function monthKey(d: Date) {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+function monthLabel(d: Date) {
+  return `${MONTH_LABELS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 export class ReportService {
-  /**
-   * Horas validadas agrupadas por mes (últimos N meses incluyendo el actual).
-   */
-  static async getValidatedHoursByMonth(months = MONTHS_SPAN) {
-    const end = new Date();
-    const start = new Date(end.getFullYear(), end.getMonth() - (months - 1), 1);
-
+  static async getValidatedHoursByPeriod(
+    filters: ReportFilters,
+    granularity: ReportGranularity,
+  ) {
     const logs = await prisma.hourLog.findMany({
-      where: {
-        estado: "validado",
-        ...notDeleted,
-        volunteer: notDeleted,
-        activity: notDeleted,
-        fecha: { gte: start },
-      },
+      where: buildHourLogWhere(filters, "validado"),
       select: { fecha: true, horas: true },
     });
 
     const sums = new Map<string, number>();
     for (const log of logs) {
-      const key = monthKey(new Date(log.fecha));
-      const h = Number(log.horas);
-      sums.set(key, (sums.get(key) ?? 0) + h);
+      const f = new Date(log.fecha);
+      const dUtc = new Date(
+        Date.UTC(f.getUTCFullYear(), f.getUTCMonth(), f.getUTCDate()),
+      );
+      const k =
+        granularity === "day"
+          ? dayKey(dUtc)
+          : granularity === "month"
+            ? monthKey(dUtc)
+            : String(dUtc.getUTCFullYear());
+      sums.set(k, (sums.get(k) ?? 0) + Number(log.horas));
     }
 
-    const keys: string[] = [];
-    for (let i = 0; i < months; i++) {
-      const d = new Date(end.getFullYear(), end.getMonth() - (months - 1 - i), 1);
-      keys.push(monthKey(d));
+    const rows: { key: string; label: string; horas: number }[] = [];
+
+    if (granularity === "day") {
+      const cur = new Date(filters.from);
+      while (cur <= filters.to) {
+        const k = dayKey(cur);
+        rows.push({
+          key: k,
+          label: dayLabel(cur),
+          horas: Math.round((sums.get(k) ?? 0) * 10) / 10,
+        });
+        cur.setUTCDate(cur.getUTCDate() + 1);
+      }
+    } else if (granularity === "month") {
+      const cur = new Date(
+        Date.UTC(filters.from.getUTCFullYear(), filters.from.getUTCMonth(), 1),
+      );
+      const end = new Date(
+        Date.UTC(filters.to.getUTCFullYear(), filters.to.getUTCMonth(), 1),
+      );
+      while (cur <= end) {
+        const k = monthKey(cur);
+        rows.push({
+          key: k,
+          label: monthLabel(cur),
+          horas: Math.round((sums.get(k) ?? 0) * 10) / 10,
+        });
+        cur.setUTCMonth(cur.getUTCMonth() + 1);
+      }
+    } else {
+      const startY = filters.from.getUTCFullYear();
+      const endY = filters.to.getUTCFullYear();
+      for (let y = startY; y <= endY; y++) {
+        const k = String(y);
+        rows.push({
+          key: k,
+          label: k,
+          horas: Math.round((sums.get(k) ?? 0) * 10) / 10,
+        });
+      }
     }
 
-    return keys.map((key) => ({
-      key,
-      label: monthLabel(key),
-      horas: Math.round((sums.get(key) ?? 0) * 10) / 10,
-    }));
+    return rows;
   }
 
-  /**
-   * Cantidad de actividades por tipo (no eliminadas).
-   */
-  static async getActivitiesByType() {
+  static async getActivitiesByType(filters: ReportFilters) {
+    const where: Prisma.ActivityWhereInput = {
+      ...notDeleted,
+      fechaInicio: rangeBound(filters.from, filters.to),
+    };
+    if (filters.activityId) where.id = filters.activityId;
+    if (filters.volunteerId) {
+      where.enrollments = {
+        some: {
+          volunteerId: filters.volunteerId,
+          estado: { not: "cancelado" },
+        },
+      };
+    }
+
     const rows = await prisma.activity.groupBy({
       by: ["tipo"],
-      where: { ...notDeleted },
+      where,
       _count: { _all: true },
     });
 
@@ -75,13 +169,16 @@ export class ReportService {
       .sort((a, b) => b.count - a.count);
   }
 
-  /**
-   * Voluntarios por estado.
-   */
-  static async getVolunteersByStatus() {
+  static async getVolunteersByStatus(filters: ReportFilters) {
+    const where: Prisma.UserWhereInput = {
+      role: "voluntario",
+      ...notDeleted,
+    };
+    if (filters.volunteerId) where.id = filters.volunteerId;
+
     const rows = await prisma.user.groupBy({
       by: ["estado"],
-      where: { role: "voluntario", ...notDeleted },
+      where,
       _count: { _all: true },
     });
 
@@ -94,18 +191,13 @@ export class ReportService {
       .sort((a, b) => b.count - a.count);
   }
 
-  /**
-   * Top voluntarios por horas validadas (acumulado).
-   */
-  static async getTopVolunteersByValidatedHours(limit = 8) {
+  static async getTopVolunteersByValidatedHours(
+    filters: ReportFilters,
+    limit = 8,
+  ) {
     const grouped = await prisma.hourLog.groupBy({
       by: ["volunteerId"],
-      where: {
-        estado: "validado",
-        ...notDeleted,
-        volunteer: notDeleted,
-        activity: notDeleted,
-      },
+      where: buildHourLogWhere(filters, "validado"),
       _sum: { horas: true },
       orderBy: { _sum: { horas: "desc" } },
       take: limit,
@@ -132,56 +224,45 @@ export class ReportService {
     });
   }
 
-  /**
-   * Totales para KPIs del informe.
-   */
-  static async getSummaryKpis() {
-    const yearStart = new Date(new Date().getFullYear(), 0, 1);
+  static async getSummaryKpis(filters: ReportFilters) {
+    const activityWhere: Prisma.ActivityWhereInput = {
+      ...notDeleted,
+      estado: "publicada",
+      fechaInicio: rangeBound(filters.from, filters.to),
+    };
+    if (filters.activityId) activityWhere.id = filters.activityId;
+    if (filters.volunteerId) {
+      activityWhere.enrollments = {
+        some: {
+          volunteerId: filters.volunteerId,
+          estado: { not: "cancelado" },
+        },
+      };
+    }
 
-    const [totalHorasValidadasAnio, actividadesPublicadas, registrosPendientes] =
-      await Promise.all([
-        prisma.hourLog
-          .aggregate({
-            _sum: { horas: true },
-            where: {
-              estado: "validado",
-              ...notDeleted,
-              volunteer: notDeleted,
-              activity: notDeleted,
-              fecha: { gte: yearStart },
-            },
-          })
-          .then((r) => Math.round(Number(r._sum.horas ?? 0) * 10) / 10),
-        prisma.activity.count({
-          where: { estado: "publicada", ...notDeleted },
-        }),
-        prisma.hourLog.count({
-          where: {
-            estado: "pendiente",
-            ...notDeleted,
-            volunteer: notDeleted,
-            activity: notDeleted,
-          },
-        }),
-      ]);
+    const [horas, actividades, pendientes] = await Promise.all([
+      prisma.hourLog
+        .aggregate({
+          _sum: { horas: true },
+          where: buildHourLogWhere(filters, "validado"),
+        })
+        .then((r) => Math.round(Number(r._sum.horas ?? 0) * 10) / 10),
+      prisma.activity.count({ where: activityWhere }),
+      prisma.hourLog.count({
+        where: buildHourLogWhere(filters, "pendiente"),
+      }),
+    ]);
 
     return {
-      totalHorasValidadasAnio,
-      actividadesPublicadas,
-      registrosPendientesValidacion: registrosPendientes,
+      totalHorasValidadasAnio: horas,
+      actividadesPublicadas: actividades,
+      registrosPendientesValidacion: pendientes,
     };
   }
 
-  /**
-   * Filas para exportación (detalle de horas validadas y pendientes recientes).
-   */
-  static async getHoursExportRows(limit = 500) {
+  static async getHoursExportRows(filters: ReportFilters, limit = 1000) {
     const rows = await prisma.hourLog.findMany({
-      where: {
-        ...notDeleted,
-        volunteer: notDeleted,
-        activity: notDeleted,
-      },
+      where: buildHourLogWhere(filters),
       select: {
         fecha: true,
         horas: true,
@@ -205,5 +286,32 @@ export class ReportService {
       estado: r.estado,
       notas: r.notas,
     }));
+  }
+
+  static async listActivitiesForFilter() {
+    const rows = await prisma.activity.findMany({
+      where: notDeleted,
+      select: {
+        id: true,
+        nombre: true,
+        fechaInicio: true,
+        estado: true,
+      },
+      orderBy: [{ fechaInicio: "desc" }, { nombre: "asc" }],
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      nombre: r.nombre,
+      year: r.fechaInicio.getUTCFullYear(),
+      estado: String(r.estado),
+    }));
+  }
+
+  static async listVolunteersForFilter() {
+    return prisma.user.findMany({
+      where: { role: "voluntario", ...notDeleted },
+      select: { id: true, nombre: true, apellido: true, email: true },
+      orderBy: [{ apellido: "asc" }, { nombre: "asc" }],
+    });
   }
 }

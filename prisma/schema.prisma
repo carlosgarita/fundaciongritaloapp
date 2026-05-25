@@ -203,6 +203,7 @@ model HourLog {
   @@index([fecha])
   @@index([estado])
   @@index([deletedAt])
+  @@index([estado, fecha])
 }
 
 model Notification {
