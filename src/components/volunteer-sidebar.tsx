@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth";
@@ -35,6 +36,7 @@ const navItems = [
   { href: "/portal/horas", label: "Mis horas", icon: Clock },
   { href: "/portal/progreso", label: "Tu progreso", icon: LineChart },
   { href: "/portal/insignias", label: "Mis insignias", icon: Award },
+  { href: "/portal/cuenta", label: "Mi cuenta", icon: KeyRound },
 ];
 
 function linkActive(pathname: string, href: string) {

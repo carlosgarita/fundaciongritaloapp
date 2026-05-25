@@ -21,6 +21,8 @@ export interface UpdateVolunteerInput {
   telefono?: string;
   estado?: VolunteerStatus;
   habilidades?: string[];
+  /** Texto en claro; si viene con contenido, se guarda como hash (solo uso admin) */
+  password?: string;
 }
 
 const VOLUNTEER_SELECT = {
@@ -143,9 +145,23 @@ export class VolunteerService {
     const user = await prisma.user.findFirst({ where: { id, ...notDeleted } });
     if (!user) throw new Error("Voluntario no encontrado");
 
+    const { password: plainPassword, ...rest } = input;
+
+    const data: Prisma.UserUpdateInput = { ...rest };
+
+    const trimmed = plainPassword?.trim();
+    if (trimmed) {
+      if (user.role !== "voluntario") {
+        throw new Error(
+          "Solo se puede establecer contraseña para cuentas de voluntario.",
+        );
+      }
+      data.passwordHash = await bcrypt.hash(trimmed, 12);
+    }
+
     return prisma.user.update({
       where: { id },
-      data: input,
+      data,
       select: VOLUNTEER_SELECT,
     });
   }

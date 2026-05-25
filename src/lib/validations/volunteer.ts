@@ -42,6 +42,13 @@ export const updateVolunteerSchema = z.object({
   telefono: z.string().optional(),
   estado: z.enum(["activo", "inactivo", "pendiente"]).optional(),
   habilidades: z.array(z.string()).optional(),
+  /** Solo administración: texto en claro; omitir o cadena vacía para no cambiar la contraseña */
+  password: z
+    .union([
+      z.literal(""),
+      z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+    ])
+    .optional(),
 });
 
 export type CreateVolunteerData = z.infer<typeof createVolunteerSchema>;

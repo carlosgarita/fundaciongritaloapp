@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Search,
   X,
+  Lock,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,6 +128,11 @@ const editFormSchema = z.object({
   telefono: z.string(),
   estado: z.string(),
   habilidades: z.string(),
+  password: z
+    .string()
+    .refine((v) => v === "" || v.length >= 6, {
+      message: "La contraseña debe tener al menos 6 caracteres",
+    }),
 });
 
 type CreateFormData = z.infer<typeof createFormSchema>;
@@ -208,6 +214,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
       telefono: volunteer.telefono,
       estado: volunteer.estado,
       habilidades: volunteer.habilidades.join(", "),
+      password: "",
     });
     setFormMode("edit");
   }
@@ -271,6 +278,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
         telefono: data.telefono || undefined,
         estado: data.estado as "activo" | "inactivo" | "pendiente" | undefined,
         habilidades: parseHabilidades(data.habilidades),
+        password: data.password.trim() || undefined,
       });
 
       if (result.success) {
@@ -489,6 +497,22 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
                   placeholder="Separadas por coma"
                   {...editForm.register("habilidades")}
                 />
+              </div>
+
+              <div>
+                <Input
+                  label="Nueva contraseña (opcional)"
+                  type="password"
+                  placeholder="Dejar en blanco para no cambiarla"
+                  icon={<Lock className="h-5 w-5" />}
+                  autoComplete="new-password"
+                  error={editForm.formState.errors.password?.message}
+                  {...editForm.register("password")}
+                />
+                <p className="mt-1.5 text-xs text-text-muted">
+                  Se usa para que el administrador restablezca la contraseña
+                  cuando un voluntario la olvida. Comunícala por un canal seguro.
+                </p>
               </div>
 
               {errorBanner}
