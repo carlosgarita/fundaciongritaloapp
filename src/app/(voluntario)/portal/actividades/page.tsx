@@ -1,7 +1,13 @@
+import Link from "next/link";
 import { auth } from "@/auth";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ActivityService } from "@/lib/services/activity.service";
 import { EnrollActivityButton } from "@/components/enroll-activity-button";
+import { UnenrollSelfButton } from "@/components/unenroll-self-button";
+import {
+  canVolunteerUnenroll,
+  isActivityClosedForEnrollment,
+} from "@/lib/enrollment-policy";
 import { CalendarDays } from "lucide-react";
 
 export default async function PortalActividadesPage() {
@@ -48,19 +54,28 @@ export default async function PortalActividadesPage() {
         <div className="grid grid-cols-1 gap-4">
           {activities.map((act) => {
             const enrolled = act.enrollments.length > 0;
+            const canUnenroll = canVolunteerUnenroll(act.fechaInicio);
+            const expired = isActivityClosedForEnrollment(act.fechaCierre);
             const start = new Date(act.fechaInicio);
+            const detailHref = `/portal/actividades/${act.id}`;
+
             return (
               <Card key={act.id}>
                 <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div>
-                      <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded capitalize">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <span className="rounded bg-primary-50 px-2 py-0.5 text-xs font-medium capitalize text-primary-600">
                         {act.tipo}
                       </span>
-                      <h2 className="text-lg font-semibold text-text-primary mt-2">
-                        {act.nombre}
+                      <h2 className="mt-2 text-lg font-semibold text-text-primary">
+                        <Link
+                          href={detailHref}
+                          className="rounded-sm hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        >
+                          {act.nombre}
+                        </Link>
                       </h2>
-                      <p className="text-sm text-text-secondary mt-1">
+                      <p className="mt-1 text-sm text-text-secondary">
                         {start.toLocaleDateString("es", {
                           weekday: "long",
                           day: "numeric",
@@ -70,15 +85,39 @@ export default async function PortalActividadesPage() {
                         {act.ubicacion ? ` · ${act.ubicacion}` : ""}
                       </p>
                       {act.descripcion ? (
-                        <p className="text-sm text-text-muted mt-2 line-clamp-2">
+                        <p className="mt-2 line-clamp-2 text-sm text-text-muted">
                           {act.descripcion}
                         </p>
                       ) : null}
+                      <Link
+                        href={detailHref}
+                        className="mt-2 inline-block text-xs font-medium text-primary-600 hover:underline"
+                      >
+                        Ver detalles
+                      </Link>
                     </div>
-                    <div className="shrink-0 flex flex-col items-start gap-2">
+
+                    <div className="flex shrink-0 flex-col items-start gap-2">
                       {enrolled ? (
-                        <span className="inline-flex items-center rounded-full bg-accent-green/15 text-accent-green text-xs font-medium px-3 py-1 border border-accent-green/30">
-                          Inscrito
+                        <>
+                          <span className="inline-flex items-center rounded-full border border-accent-green/30 bg-accent-green/15 px-3 py-1 text-xs font-medium text-accent-green">
+                            Inscrito
+                          </span>
+                          {expired ? (
+                            <span className="max-w-[200px] text-xs text-text-muted">
+                              Actividad finalizada
+                            </span>
+                          ) : canUnenroll ? (
+                            <UnenrollSelfButton activityId={act.id} />
+                          ) : (
+                            <span className="max-w-[200px] text-xs text-text-muted">
+                              Desinscripción cerrada (faltan menos de 2 días)
+                            </span>
+                          )}
+                        </>
+                      ) : expired ? (
+                        <span className="text-xs text-text-muted">
+                          Inscripciones cerradas (actividad finalizada)
                         </span>
                       ) : activo ? (
                         <EnrollActivityButton activityId={act.id} />

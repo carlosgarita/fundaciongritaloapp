@@ -71,7 +71,22 @@ export class ActivityService {
           where: { volunteerId },
         },
       },
-      orderBy: { fechaInicio: "asc" },
+      orderBy: { fechaInicio: "desc" },
+    });
+  }
+
+  /**
+   * Detalle de una actividad para el portal del voluntario.
+   * Sólo incluye la inscripción propia (no expone otras inscripciones).
+   */
+  static async findDetailForVolunteer(id: string, volunteerId: string) {
+    return prisma.activity.findFirst({
+      where: { id, ...notDeleted },
+      include: {
+        createdBy: { select: { id: true, nombre: true, apellido: true } },
+        enrollments: { where: { volunteerId } },
+        _count: { select: { enrollments: true } },
+      },
     });
   }
 

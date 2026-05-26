@@ -93,6 +93,41 @@ export async function enrollSelfAction(activityId: string) {
   }
 }
 
+export async function unenrollSelfAction(activityId: string) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "voluntario") {
+    return { success: false as const, error: "No autorizado" };
+  }
+
+  const parsed = selfEnrollSchema.safeParse({ activityId });
+  if (!parsed.success) {
+    return {
+      success: false as const,
+      error: parsed.error.issues.map((i) => i.message).join(", "),
+    };
+  }
+
+  try {
+    await EnrollmentService.unenrollSelf(
+      parsed.data.activityId,
+      session.user.id,
+    );
+    await BadgeRulesService.evaluateAutomaticBadgesForVolunteer(session.user.id);
+    revalidatePath("/portal");
+    revalidatePath("/portal/actividades");
+    revalidatePath(`/portal/actividades/${parsed.data.activityId}`);
+    revalidatePath("/portal/progreso");
+    revalidatePath("/portal/insignias");
+    revalidatePath("/badges");
+    revalidatePath("/actividades");
+    revalidatePath(`/actividades/${parsed.data.activityId}`);
+    revalidatePath("/voluntarios");
+    return { success: true as const };
+  } catch (e) {
+    return { success: false as const, error: (e as Error).message };
+  }
+}
+
 export async function unenrollVolunteerAction(enrollmentId: string) {
   const session = await auth();
   if (!session?.user || session.user.role !== "admin") {

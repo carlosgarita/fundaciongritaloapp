@@ -33,6 +33,7 @@ import {
   enrollVolunteerAction,
   unenrollVolunteerAction,
 } from "@/lib/actions/enrollment";
+import { isActivityClosedForEnrollment } from "@/lib/enrollment-policy";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -395,11 +396,16 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
       )
     : [];
 
+  const enrollmentExpired = enrollmentActivity
+    ? isActivityClosedForEnrollment(enrollmentActivity.fechaCierre)
+    : false;
+
   const canAddEnrollment =
     enrollmentActivity &&
     (enrollmentActivity.estado === "publicada" ||
       enrollmentActivity.estado === "borrador") &&
-    enrollmentActivity.cuposDisponibles > 0;
+    enrollmentActivity.cuposDisponibles > 0 &&
+    !enrollmentExpired;
 
   /* ---- Render ---- */
 
@@ -819,9 +825,11 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
                 {enrollmentActivity.estado !== "publicada" &&
                 enrollmentActivity.estado !== "borrador"
                   ? "No se pueden añadir inscripciones en el estado actual de la actividad."
-                  : enrollmentActivity.cuposDisponibles < 1
-                    ? "No hay cupos disponibles."
-                    : null}
+                  : enrollmentExpired
+                    ? "La fecha de finalización de esta actividad ya pasó."
+                    : enrollmentActivity.cuposDisponibles < 1
+                      ? "No hay cupos disponibles."
+                      : null}
               </p>
             )}
 
