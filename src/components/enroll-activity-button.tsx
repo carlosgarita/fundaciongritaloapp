@@ -8,16 +8,18 @@ import { enrollSelfAction } from "@/lib/actions/enrollment";
 export function EnrollActivityButton({
   activityId,
   disabled,
+  className,
 }: {
   activityId: string;
   disabled?: boolean;
+  className?: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
 
   return (
-    <div className="space-y-1">
+    <div className={`space-y-1 ${className ?? ""}`}>
       <Button
         type="button"
         size="sm"
@@ -35,7 +37,7 @@ export function EnrollActivityButton({
         Inscribirme
       </Button>
       {error ? (
-        <p className="text-xs text-accent-red max-w-[200px]">{error}</p>
+        <p className="max-w-[220px] text-xs text-accent-red">{error}</p>
       ) : null}
     </div>
   );

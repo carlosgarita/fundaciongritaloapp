@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { HourLogService } from "@/lib/services/hour-log.service";
 import { ActivityService } from "@/lib/services/activity.service";
-import { VolunteerHourForm } from "@/components/volunteer-hour-form";
+import { VolunteerHoursPanel } from "@/components/volunteer-hours-panel";
 
 const estadoLabel: Record<string, string> = {
   pendiente: "Pendiente",
@@ -52,19 +52,10 @@ export default async function PortalHorasPage() {
         </div>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <p className="text-sm font-medium text-text-secondary">
-            Nuevo registro
-          </p>
-        </CardHeader>
-        <CardContent>
-          <VolunteerHourForm
-            activities={activityOptions}
-            disabled={!activo}
-          />
-        </CardContent>
-      </Card>
+      <VolunteerHoursPanel
+        activities={activityOptions}
+        disabled={!activo}
+      />
 
       <Card>
         <CardHeader>

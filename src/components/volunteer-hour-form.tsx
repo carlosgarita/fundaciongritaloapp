@@ -17,9 +17,13 @@ type FormData = z.infer<typeof formSchema>;
 export function VolunteerHourForm({
   activities,
   disabled,
+  onSuccess,
+  onCancel,
 }: {
   activities: { id: string; nombre: string }[];
   disabled?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -58,14 +62,22 @@ export function VolunteerHourForm({
         notas: "",
       });
       router.refresh();
+      onSuccess?.();
     });
   }
 
   if (activities.length === 0) {
     return (
-      <p className="text-sm text-text-secondary">
-        Inscríbete en una actividad publicada para poder registrar horas.
-      </p>
+      <div className="space-y-4">
+        <p className="text-sm text-text-secondary">
+          Inscríbete en una actividad publicada para poder registrar horas.
+        </p>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cerrar
+          </Button>
+        ) : null}
+      </div>
     );
   }
 
@@ -133,9 +145,21 @@ export function VolunteerHourForm({
         </div>
       ) : null}
 
-      <Button type="submit" loading={pending} disabled={disabled}>
-        Enviar registro
-      </Button>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end sm:gap-3">
+        {onCancel ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={pending}
+          >
+            Cancelar
+          </Button>
+        ) : null}
+        <Button type="submit" loading={pending} disabled={disabled}>
+          Enviar registro
+        </Button>
+      </div>
     </form>
   );
 }

@@ -97,36 +97,42 @@ export default async function PortalActividadesPage() {
                       </Link>
                     </div>
 
-                    <div className="flex shrink-0 flex-col items-start gap-2">
+                    <div className="flex shrink-0 flex-col items-stretch gap-2 text-right sm:items-end sm:min-w-[180px]">
                       {enrolled ? (
                         <>
-                          <span className="inline-flex items-center rounded-full border border-accent-green/30 bg-accent-green/15 px-3 py-1 text-xs font-medium text-accent-green">
+                          <span className="inline-flex items-center justify-center self-end rounded-full border border-accent-green/30 bg-accent-green/15 px-3 py-1 text-xs font-medium text-accent-green">
                             Inscrito
                           </span>
                           {expired ? (
-                            <span className="max-w-[200px] text-xs text-text-muted">
+                            <span className="max-w-[220px] self-end text-xs text-text-muted">
                               Actividad finalizada
                             </span>
                           ) : canUnenroll ? (
-                            <UnenrollSelfButton activityId={act.id} />
+                            <UnenrollSelfButton
+                              activityId={act.id}
+                              className="self-end"
+                            />
                           ) : (
-                            <span className="max-w-[200px] text-xs text-text-muted">
+                            <span className="max-w-[220px] self-end text-xs text-text-muted">
                               Desinscripción cerrada (faltan menos de 2 días)
                             </span>
                           )}
                         </>
                       ) : expired ? (
-                        <span className="text-xs text-text-muted">
+                        <span className="max-w-[220px] self-end text-xs text-text-muted">
                           Inscripciones cerradas (actividad finalizada)
                         </span>
                       ) : activo ? (
-                        <EnrollActivityButton activityId={act.id} />
+                        <EnrollActivityButton
+                          activityId={act.id}
+                          className="self-end"
+                        />
                       ) : (
-                        <span className="text-xs text-text-muted">
+                        <span className="max-w-[220px] self-end text-xs text-text-muted">
                           Inscripción no disponible
                         </span>
                       )}
-                      <span className="text-xs text-text-muted">
+                      <span className="self-end text-xs text-text-muted">
                         Cupos: {act.cuposDisponibles} / {act.cuposTotales}
                       </span>
                     </div>

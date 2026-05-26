@@ -37,11 +37,23 @@ export function UnenrollSelfButton({ activityId, disabled, className }: Props) {
   }
 
   return (
-    <div className={`space-y-2 ${className ?? ""}`}>
-      <p className="text-xs text-text-secondary max-w-[220px]">
+    <div className={`max-w-[260px] space-y-2 ${className ?? ""}`}>
+      <p className="text-xs text-text-secondary">
         ¿Seguro que deseas desinscribirte? Liberarás un cupo para otra persona.
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          disabled={pending}
+          onClick={() => {
+            setError("");
+            setConfirming(false);
+          }}
+        >
+          Cancelar
+        </Button>
         <Button
           type="button"
           size="sm"
@@ -63,21 +75,9 @@ export function UnenrollSelfButton({ activityId, disabled, className }: Props) {
         >
           Sí, desinscribirme
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={pending}
-          onClick={() => {
-            setError("");
-            setConfirming(false);
-          }}
-        >
-          Cancelar
-        </Button>
       </div>
       {error ? (
-        <p className="text-xs text-accent-red max-w-[220px]">{error}</p>
+        <p className="text-xs text-accent-red">{error}</p>
       ) : null}
     </div>
   );
