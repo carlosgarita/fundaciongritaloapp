@@ -10,6 +10,7 @@ export interface CreateVolunteerInput {
   apellido: string;
   cedula?: string;
   telefono?: string;
+  sede?: string;
   habilidades?: string[];
   avatarUrl?: string;
 }
@@ -19,6 +20,7 @@ export interface UpdateVolunteerInput {
   apellido?: string;
   cedula?: string;
   telefono?: string;
+  sede?: string;
   estado?: VolunteerStatus;
   habilidades?: string[];
   /** Texto en claro; si viene con contenido, se guarda como hash (solo uso admin) */
@@ -32,6 +34,7 @@ const VOLUNTEER_SELECT = {
   apellido: true,
   cedula: true,
   telefono: true,
+  sede: true,
   role: true,
   estado: true,
   habilidades: true,
@@ -132,6 +135,7 @@ export class VolunteerService {
         apellido: input.apellido,
         cedula: input.cedula,
         telefono: input.telefono ?? "",
+        sede: input.sede ?? "",
         role: "voluntario",
         estado: "activo",
         habilidades: input.habilidades ?? [],

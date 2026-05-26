@@ -40,6 +40,7 @@ interface Volunteer {
   apellido: string;
   cedula: string | null;
   telefono: string;
+  sede: string;
   role: string;
   estado: string;
   habilidades: string[];
@@ -97,6 +98,7 @@ const createFormSchema = z
     apellido: z.string().min(1, "El apellido es requerido"),
     cedula: z.string(),
     telefono: z.string(),
+    sede: z.string(),
     habilidades: z.string(),
     avatarUrl: z.string().max(2048).optional(),
   })
@@ -126,6 +128,7 @@ const editFormSchema = z.object({
   apellido: z.string().min(1, "El apellido es requerido"),
   cedula: z.string(),
   telefono: z.string(),
+  sede: z.string(),
   estado: z.string(),
   habilidades: z.string(),
   password: z
@@ -198,6 +201,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
       apellido: "",
       cedula: "",
       telefono: "",
+      sede: "",
       habilidades: "",
       avatarUrl: "",
     });
@@ -212,6 +216,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
       apellido: volunteer.apellido,
       cedula: volunteer.cedula ?? "",
       telefono: volunteer.telefono,
+      sede: volunteer.sede ?? "",
       estado: volunteer.estado,
       habilidades: volunteer.habilidades.join(", "),
       password: "",
@@ -246,6 +251,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
         apellido: data.apellido,
         cedula: data.cedula || undefined,
         telefono: data.telefono || undefined,
+        sede: data.sede || undefined,
         habilidades: parseHabilidades(data.habilidades),
         avatarUrl: data.avatarUrl?.trim() || undefined,
       });
@@ -276,6 +282,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
         apellido: data.apellido,
         cedula: data.cedula || undefined,
         telefono: data.telefono || undefined,
+        sede: data.sede || undefined,
         estado: data.estado as "activo" | "inactivo" | "pendiente" | undefined,
         habilidades: parseHabilidades(data.habilidades),
         password: data.password.trim() || undefined,
@@ -400,6 +407,13 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
               </div>
 
               <Input
+                label="Sede"
+                placeholder="Ej: San José, Guanacaste… (opcional)"
+                error={createForm.formState.errors.sede?.message}
+                {...createForm.register("sede")}
+              />
+
+              <Input
                 label="Habilidades"
                 placeholder="Ej: diseño gráfico, primeros auxilios, conducción (separadas por coma)"
                 error={createForm.formState.errors.habilidades?.message}
@@ -485,6 +499,12 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
                   {...editForm.register("telefono")}
                 />
               </div>
+
+              <Input
+                label="Sede"
+                placeholder="Ej: San José, Guanacaste… (opcional)"
+                {...editForm.register("sede")}
+              />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Select

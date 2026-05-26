@@ -11,6 +11,7 @@ export const createVolunteerSchema = z
     apellido: z.string().min(1, "El apellido es requerido"),
     cedula: z.string().optional(),
     telefono: z.string().optional(),
+    sede: z.string().optional(),
     habilidades: z.array(z.string()).optional(),
     avatarUrl: z.string().max(2048).optional(),
   })
@@ -40,6 +41,7 @@ export const updateVolunteerSchema = z.object({
   apellido: z.string().min(1).optional(),
   cedula: z.string().optional(),
   telefono: z.string().optional(),
+  sede: z.string().optional(),
   estado: z.enum(["activo", "inactivo", "pendiente"]).optional(),
   habilidades: z.array(z.string()).optional(),
   /** Solo administración: texto en claro; omitir o cadena vacía para no cambiar la contraseña */

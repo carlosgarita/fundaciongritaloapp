@@ -1,5 +1,12 @@
 import { redirect } from "next/navigation";
-import { Mail, Phone, IdCard, CalendarDays, UserCircle } from "lucide-react";
+import {
+  Building2,
+  CalendarDays,
+  IdCard,
+  Mail,
+  Phone,
+  UserCircle,
+} from "lucide-react";
 import { auth } from "@/auth";
 import { VolunteerService } from "@/lib/services/volunteer.service";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -104,6 +111,18 @@ export default async function PortalCuentaPage() {
                 </dt>
                 <dd className="text-sm text-text-primary">
                   {me.cedula?.trim() ? me.cedula : "—"}
+                </dd>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-text-muted" aria-hidden />
+              <div className="min-w-0">
+                <dt className="text-xs font-medium uppercase tracking-wide text-text-muted">
+                  Sede
+                </dt>
+                <dd className="text-sm text-text-primary">
+                  {me.sede?.trim() ? me.sede : "—"}
                 </dd>
               </div>
             </div>

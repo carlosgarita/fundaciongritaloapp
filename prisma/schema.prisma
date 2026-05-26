@@ -22,6 +22,7 @@ model User {
   apellido    String          @default("")
   cedula      String?         @unique
   telefono    String          @default("")
+  sede        String          @default("")
   role        UserRole        @default(voluntario)
   estado      VolunteerStatus @default(activo)
   habilidades String[]        @default([])

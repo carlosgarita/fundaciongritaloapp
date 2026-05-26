@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
+  Building2,
   Clock,
   Mail,
   Phone,
@@ -96,6 +97,12 @@ export default async function VolunteerAdminDetailPage({ params }: PageProps) {
                   <span className="flex items-center gap-1">
                     <Phone className="h-4 w-4 shrink-0" />
                     {volunteer.telefono}
+                  </span>
+                ) : null}
+                {volunteer.sede?.trim() ? (
+                  <span className="flex items-center gap-1">
+                    <Building2 className="h-4 w-4 shrink-0" />
+                    {volunteer.sede}
                   </span>
                 ) : null}
               </div>
