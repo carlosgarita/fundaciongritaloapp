@@ -127,14 +127,14 @@ export function ReportsDashboard({
   activeVolunteerName,
 }: ReportsDashboardProps) {
   const rangeLabel = `${formatLongDateUtc(fromIso)} – ${formatLongDateUtc(toIso)}`;
-  const pieTypeData = useMemo(
-    () =>
-      activitiesByType.map((r) => ({
-        name: r.label,
-        value: r.count,
-      })),
-    [activitiesByType],
-  );
+  const pieTypeData = useMemo(() => {
+    const total = activitiesByType.reduce((s, r) => s + r.count, 0);
+    return activitiesByType.map((r) => ({
+      name: r.label,
+      value: r.count,
+      percent: total > 0 ? r.count / total : 0,
+    }));
+  }, [activitiesByType]);
 
   const pieStatusData = useMemo(
     () =>
@@ -384,18 +384,42 @@ export function ReportsDashboard({
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    label={({ name, percent }: { name?: string; percent?: number }) =>
-                      `${name ?? ""} ${percent != null ? (percent * 100).toFixed(0) : 0}%`
-                    }
+                    cy="45%"
+                    outerRadius={85}
+                    isAnimationActive={false}
                   >
                     {pieTypeData.map((_, i) => (
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "0.75rem",
+                      border: "1px solid var(--color-border)",
+                    }}
+                    formatter={(value, _name, item) => {
+                      const p =
+                        (item?.payload as { percent?: number })?.percent ?? 0;
+                      return [
+                        `${value} (${(p * 100).toFixed(0)}%)`,
+                        "Actividades",
+                      ];
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+                    formatter={(value, entry) => {
+                      const p =
+                        (
+                          entry?.payload as
+                            | { percent?: number }
+                            | undefined
+                        )?.percent ?? 0;
+                      return `${value} — ${(p * 100).toFixed(0)}%`;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
