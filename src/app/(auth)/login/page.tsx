@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, AlertCircle } from "lucide-react";
-import Link from "next/link";
 import { LogoWithText } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -94,19 +93,10 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <Link
-              href="/recuperar"
-              className="text-sm text-primary-500 hover:text-primary-600 hover:underline transition-colors"
-            >
-              ¿Olvidó su contraseña?
-            </Link>
-          </div>
-
           <div className="mt-8 pt-6 border-t border-border text-center">
-            <p className="text-sm text-text-muted">¿No tienes una cuenta?</p>
-            <p className="text-sm font-medium text-text-primary mt-1">
-              Contacta a tu coordinador regional
+            <p className="text-sm text-text-secondary">
+              Si no tienes cuenta u olvidaste tu contraseña por favor contacta a
+              tu coordinador regional.
             </p>
           </div>
         </div>
