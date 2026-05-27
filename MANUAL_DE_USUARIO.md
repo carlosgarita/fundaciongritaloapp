@@ -306,7 +306,7 @@ Tres tarjetas muestran los indicadores **según los filtros activos**:
 
 ### 4.6.4 Top Voluntarios
 
-Tabla con los voluntarios que más horas validadas tienen en el período seleccionado, ordenados de mayor a menor.
+Tabla con los voluntarios que más horas validadas tienen en el período seleccionado, ordenados de mayor a menor. d
 
 ### 4.6.5 Exportación de Datos
 
