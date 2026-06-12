@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/sidebar";
+import { IdleLogout } from "@/components/idle-logout";
 import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
@@ -34,6 +35,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-surface-secondary">
+      <IdleLogout />
       <Sidebar profile={profile} />
       <main id="main-content" className="lg:ml-64 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">{children}</div>

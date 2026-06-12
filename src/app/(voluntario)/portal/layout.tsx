@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { VolunteerSidebar } from "@/components/volunteer-sidebar";
+import { IdleLogout } from "@/components/idle-logout";
 
 export default async function PortalLayout({
   children,
@@ -35,6 +36,7 @@ export default async function PortalLayout({
 
   return (
     <div className="min-h-screen bg-surface-secondary">
+      <IdleLogout />
       <VolunteerSidebar profile={profile} />
       <main id="main-content" className="lg:ml-64 min-h-screen">
         <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">{children}</div>

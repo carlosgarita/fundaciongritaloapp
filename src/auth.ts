@@ -4,7 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { authConfig } from "@/auth.config";
+import { authConfig, SESSION_ABSOLUTE_MS } from "@/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -60,8 +60,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.estado = dbUser.estado;
           token.nombre = dbUser.nombre;
           token.apellido = dbUser.apellido;
+          // Marca de tiempo del login (epoch ms). Sirve para imponer el tope
+          // absoluto de vida de la sesión, independiente de la actividad.
+          token.loginAt = Date.now();
         }
       }
+
+      // Tope absoluto: invalidar el token si se superó el lapso desde el login.
+      const loginAt = typeof token.loginAt === "number" ? token.loginAt : 0;
+      if (loginAt > 0 && Date.now() - loginAt > SESSION_ABSOLUTE_MS) {
+        return null;
+      }
+
       return token;
     },
     async session({ session, token }) {
