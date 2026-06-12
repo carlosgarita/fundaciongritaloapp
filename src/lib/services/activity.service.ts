@@ -10,6 +10,7 @@ export interface CreateActivityInput {
   fechaCierre: string;
   cuposTotales: number;
   ubicacion?: string;
+  imagenUrl?: string;
   createdById: string;
 }
 
@@ -21,6 +22,7 @@ export interface UpdateActivityInput {
   fechaCierre?: string;
   cuposTotales?: number;
   ubicacion?: string;
+  imagenUrl?: string;
   estado?: ActivityStatus;
 }
 
@@ -169,6 +171,7 @@ export class ActivityService {
   }
 
   static async create(input: CreateActivityInput) {
+    const imagenTrim = input.imagenUrl?.trim();
     return prisma.activity.create({
       data: {
         nombre: input.nombre,
@@ -179,6 +182,7 @@ export class ActivityService {
         cuposTotales: input.cuposTotales,
         cuposDisponibles: input.cuposTotales,
         ubicacion: input.ubicacion ?? "",
+        ...(imagenTrim ? { imagenUrl: imagenTrim } : {}),
         createdById: input.createdById,
         estado: "publicada",
       },
@@ -194,6 +198,12 @@ export class ActivityService {
     const data: Record<string, unknown> = { ...input };
     if (input.fechaInicio) data.fechaInicio = new Date(input.fechaInicio);
     if (input.fechaCierre) data.fechaCierre = new Date(input.fechaCierre);
+
+    // imagenUrl: cadena vacía limpia el campo (null), valor con texto lo guarda.
+    if (input.imagenUrl !== undefined) {
+      const trim = input.imagenUrl.trim();
+      data.imagenUrl = trim.length > 0 ? trim : null;
+    }
 
     if (input.cuposTotales !== undefined) {
       const diff = input.cuposTotales - activity.cuposTotales;

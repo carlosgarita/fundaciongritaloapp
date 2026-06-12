@@ -154,6 +154,7 @@ model Activity {
   cuposDisponibles Int            @default(0)
   estado           ActivityStatus @default(publicada)
   ubicacion        String         @default("")
+  imagenUrl        String?
   createdById      String?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

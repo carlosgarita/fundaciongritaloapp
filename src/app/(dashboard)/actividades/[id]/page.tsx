@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { ActivityService } from "@/lib/services/activity.service";
 import { Card, CardContent } from "@/components/ui/card";
+import { ActivityImage } from "@/components/activity-image";
 
 const TIPO_LABELS: Record<string, string> = {
   social: "Social",
@@ -77,19 +78,27 @@ export default async function ActividadAdminDetailPage({ params }: PageProps) {
         </Link>
 
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              {actividad.nombre}
-            </h1>
-            <div className="mt-2 flex flex-wrap gap-2 items-center">
-              <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
-                {TIPO_LABELS[actividad.tipo] ?? actividad.tipo}
-              </span>
-              <span
-                className={`text-xs font-medium px-2 py-1 rounded-full ${ESTADO_COLORS[actividad.estado] ?? ""}`}
-              >
-                {ACTIVITY_ESTADO_LABELS[actividad.estado] ?? actividad.estado}
-              </span>
+          <div className="flex items-start gap-4 min-w-0">
+            <ActivityImage
+              nombre={actividad.nombre}
+              imagenUrl={actividad.imagenUrl}
+              className="h-20 w-20"
+              initialsClassName="bg-primary-100 text-primary-700 text-base"
+            />
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-text-primary break-words">
+                {actividad.nombre}
+              </h1>
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
+                  {TIPO_LABELS[actividad.tipo] ?? actividad.tipo}
+                </span>
+                <span
+                  className={`text-xs font-medium px-2 py-1 rounded-full ${ESTADO_COLORS[actividad.estado] ?? ""}`}
+                >
+                  {ACTIVITY_ESTADO_LABELS[actividad.estado] ?? actividad.estado}
+                </span>
+              </div>
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ActivityService } from "@/lib/services/activity.service";
 import { EnrollActivityButton } from "@/components/enroll-activity-button";
 import { UnenrollSelfButton } from "@/components/unenroll-self-button";
+import { ActivityImage } from "@/components/activity-image";
 import {
   canVolunteerUnenroll,
   isActivityClosedForEnrollment,
@@ -63,38 +64,46 @@ export default async function PortalActividadesPage() {
               <Card key={act.id}>
                 <CardHeader>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <span className="rounded bg-primary-50 px-2 py-0.5 text-xs font-medium capitalize text-primary-600">
-                        {act.tipo}
-                      </span>
-                      <h2 className="mt-2 text-lg font-semibold text-text-primary">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <ActivityImage
+                        nombre={act.nombre}
+                        imagenUrl={act.imagenUrl}
+                        className="h-12 w-12 shrink-0"
+                        initialsClassName="bg-primary-50 text-primary-600 text-sm"
+                      />
+                      <div className="min-w-0">
+                        <span className="rounded bg-primary-50 px-2 py-0.5 text-xs font-medium capitalize text-primary-600">
+                          {act.tipo}
+                        </span>
+                        <h2 className="mt-2 text-lg font-semibold text-text-primary">
+                          <Link
+                            href={detailHref}
+                            className="rounded-sm hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                          >
+                            {act.nombre}
+                          </Link>
+                        </h2>
+                        <p className="mt-1 text-sm text-text-secondary">
+                          {start.toLocaleDateString("es", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                          {act.ubicacion ? ` · ${act.ubicacion}` : ""}
+                        </p>
+                        {act.descripcion ? (
+                          <p className="mt-2 line-clamp-2 text-sm text-text-muted">
+                            {act.descripcion}
+                          </p>
+                        ) : null}
                         <Link
                           href={detailHref}
-                          className="rounded-sm hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                          className="mt-2 inline-block text-xs font-medium text-primary-600 hover:underline"
                         >
-                          {act.nombre}
+                          Ver detalles
                         </Link>
-                      </h2>
-                      <p className="mt-1 text-sm text-text-secondary">
-                        {start.toLocaleDateString("es", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                        {act.ubicacion ? ` · ${act.ubicacion}` : ""}
-                      </p>
-                      {act.descripcion ? (
-                        <p className="mt-2 line-clamp-2 text-sm text-text-muted">
-                          {act.descripcion}
-                        </p>
-                      ) : null}
-                      <Link
-                        href={detailHref}
-                        className="mt-2 inline-block text-xs font-medium text-primary-600 hover:underline"
-                      >
-                        Ver detalles
-                      </Link>
+                      </div>
                     </div>
 
                     <div className="flex shrink-0 flex-col items-stretch gap-2 text-right sm:items-end sm:min-w-[180px]">

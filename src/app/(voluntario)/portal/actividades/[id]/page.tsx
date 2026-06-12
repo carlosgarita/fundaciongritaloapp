@@ -13,6 +13,7 @@ import { ActivityService } from "@/lib/services/activity.service";
 import { Card, CardContent } from "@/components/ui/card";
 import { EnrollActivityButton } from "@/components/enroll-activity-button";
 import { UnenrollSelfButton } from "@/components/unenroll-self-button";
+import { ActivityImage } from "@/components/activity-image";
 import {
   UNENROLL_CLOSED_MESSAGE,
   canVolunteerUnenroll,
@@ -105,19 +106,27 @@ export default async function PortalActividadDetailPage({ params }: PageProps) {
         </Link>
 
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              {actividad.nombre}
-            </h1>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-primary-50 px-2 py-1 text-xs font-medium text-primary-600">
-                {TIPO_LABELS[actividad.tipo] ?? actividad.tipo}
-              </span>
-              <span
-                className={`rounded-full px-2 py-1 text-xs font-medium ${ESTADO_COLORS[actividad.estado] ?? ""}`}
-              >
-                {ACTIVITY_ESTADO_LABELS[actividad.estado] ?? actividad.estado}
-              </span>
+          <div className="flex min-w-0 items-start gap-4">
+            <ActivityImage
+              nombre={actividad.nombre}
+              imagenUrl={actividad.imagenUrl}
+              className="h-20 w-20"
+              initialsClassName="bg-primary-100 text-primary-700 text-base"
+            />
+            <div className="min-w-0">
+              <h1 className="text-2xl font-bold text-text-primary break-words">
+                {actividad.nombre}
+              </h1>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-primary-50 px-2 py-1 text-xs font-medium text-primary-600">
+                  {TIPO_LABELS[actividad.tipo] ?? actividad.tipo}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-1 text-xs font-medium ${ESTADO_COLORS[actividad.estado] ?? ""}`}
+                >
+                  {ACTIVITY_ESTADO_LABELS[actividad.estado] ?? actividad.estado}
+                </span>
+              </div>
             </div>
           </div>
         </div>

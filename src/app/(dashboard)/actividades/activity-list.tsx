@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
+import { ActivityImage } from "@/components/activity-image";
 import {
   createActivityAction,
   updateActivityAction,
@@ -50,6 +51,7 @@ interface Activity {
   cuposDisponibles: number;
   estado: string;
   ubicacion: string;
+  imagenUrl: string | null;
   createdBy: { id: string; nombre: string; apellido: string } | null;
   _count: { enrollments: number };
   enrollments: {
@@ -142,16 +144,38 @@ function toDatetimeLocal(iso: string) {
 /*  Form schema (client-side — server actions do strict validation)    */
 /* ------------------------------------------------------------------ */
 
-const activityFormSchema = z.object({
-  nombre: z.string().min(1, "El nombre es requerido"),
-  descripcion: z.string(),
-  tipo: z.string().min(1, "El tipo es requerido"),
-  fechaInicio: z.string().min(1, "La fecha de inicio es requerida"),
-  fechaCierre: z.string().min(1, "La fecha de cierre es requerida"),
-  cuposTotales: z.string().min(1, "Los cupos son requeridos"),
-  ubicacion: z.string(),
-  estado: z.string().optional(),
-});
+const activityFormSchema = z
+  .object({
+    nombre: z.string().min(1, "El nombre es requerido"),
+    descripcion: z.string(),
+    tipo: z.string().min(1, "El tipo es requerido"),
+    fechaInicio: z.string().min(1, "La fecha de inicio es requerida"),
+    fechaCierre: z.string().min(1, "La fecha de cierre es requerida"),
+    cuposTotales: z.string().min(1, "Los cupos son requeridos"),
+    ubicacion: z.string(),
+    estado: z.string().optional(),
+    imagenUrl: z.string().max(2048).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const raw = data.imagenUrl?.trim();
+    if (!raw) return;
+    try {
+      const u = new URL(raw);
+      if (u.protocol !== "http:" && u.protocol !== "https:") {
+        ctx.addIssue({
+          code: "custom",
+          message: "La URL debe comenzar con http:// o https://",
+          path: ["imagenUrl"],
+        });
+      }
+    } catch {
+      ctx.addIssue({
+        code: "custom",
+        message: "URL de imagen inválida",
+        path: ["imagenUrl"],
+      });
+    }
+  });
 
 type ActivityFormData = z.infer<typeof activityFormSchema>;
 
@@ -243,6 +267,7 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
       fechaCierre: "",
       cuposTotales: "",
       ubicacion: "",
+      imagenUrl: "",
     });
     setFormMode("create");
   }
@@ -258,6 +283,7 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
       fechaCierre: toDatetimeLocal(activity.fechaCierre),
       cuposTotales: String(activity.cuposTotales),
       ubicacion: activity.ubicacion,
+      imagenUrl: activity.imagenUrl ?? "",
       estado: activity.estado,
     });
     setFormMode("edit");
@@ -311,6 +337,7 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
         fechaCierre: new Date(data.fechaCierre).toISOString(),
         cuposTotales: cupos,
         ubicacion: data.ubicacion || undefined,
+        imagenUrl: data.imagenUrl?.trim() ?? "",
       };
 
       const result =
@@ -500,6 +527,20 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
                 />
               </div>
 
+              <div>
+                <Input
+                  label="URL de la imagen (CDN / Enlace Directo .jpg .png)"
+                  type="text"
+                  placeholder="https://…"
+                  error={errors.imagenUrl?.message}
+                  {...register("imagenUrl")}
+                />
+                <p className="mt-1.5 text-xs text-text-muted">
+                  Sugerencia: Suba la imagen a Postimages.org y pegue aquí el
+                  &apos;Enlace directo&apos; terminado en formato de imagen.
+                </p>
+              </div>
+
               {formMode === "edit" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select
@@ -607,18 +648,28 @@ export function ActivityList({ activities, volunteers }: ActivityListProps) {
                   className="border-b border-border last:border-0 hover:bg-surface-hover/50 transition-colors"
                 >
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/actividades/${activity.id}`}
-                      className="font-medium text-text-primary hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-sm inline-block text-left"
-                    >
-                      {activity.nombre}
-                    </Link>
-                    {activity.ubicacion && (
-                      <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
-                        <MapPin className="h-3 w-3" />
-                        {activity.ubicacion}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <ActivityImage
+                        nombre={activity.nombre}
+                        imagenUrl={activity.imagenUrl}
+                        className="h-8 w-8 shrink-0"
+                        initialsClassName="bg-primary-50 text-primary-600"
+                      />
+                      <div className="min-w-0">
+                        <Link
+                          href={`/actividades/${activity.id}`}
+                          className="font-medium text-text-primary hover:text-primary-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-sm inline-block text-left"
+                        >
+                          {activity.nombre}
+                        </Link>
+                        {activity.ubicacion && (
+                          <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5">
+                            <MapPin className="h-3 w-3" />
+                            {activity.ubicacion}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
