@@ -43,7 +43,9 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
           "bg-surface shadow-lg w-full flex flex-col min-h-0 animate-fade-in",
           /* Móvil: panel a pantalla completa (evita ventanas flotantes pequeñas y barras del navegador) */
           "max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:rounded-none max-sm:max-w-full",
-          "sm:rounded-2xl sm:max-h-[min(90vh,900px)] sm:max-w-lg sm:overflow-hidden",
+          /* Escritorio: limitar a 90 % del viewport dinámico (`dvh` excluye barras del navegador
+             en iOS/Android y permite que el cuerpo haga scroll interno cuando el contenido excede). */
+          "sm:rounded-2xl sm:max-h-[90dvh] sm:max-w-lg sm:overflow-hidden",
           className,
         )}
         role="dialog"

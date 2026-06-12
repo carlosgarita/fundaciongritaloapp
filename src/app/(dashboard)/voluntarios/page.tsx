@@ -1,8 +1,12 @@
 import { VolunteerService } from "@/lib/services/volunteer.service";
+import { RankingService } from "@/lib/services/ranking.service";
 import { VolunteerList } from "./volunteer-list";
 
 export default async function VoluntariosPage() {
-  const volunteers = await VolunteerService.findAll();
+  const [volunteers, rankings] = await Promise.all([
+    VolunteerService.findAll(),
+    RankingService.getVolunteerRankings(10),
+  ]);
   const serialized = JSON.parse(JSON.stringify(volunteers));
 
   return (
@@ -13,7 +17,7 @@ export default async function VoluntariosPage() {
           Administra y supervisa el equipo de voluntarios de la fundación.
         </p>
       </div>
-      <VolunteerList volunteers={serialized} />
+      <VolunteerList volunteers={serialized} rankings={rankings} />
     </div>
   );
 }

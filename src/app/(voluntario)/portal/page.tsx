@@ -4,6 +4,9 @@ import { Clock, CalendarDays, Award } from "lucide-react";
 import { HourLogService } from "@/lib/services/hour-log.service";
 import { BadgeRulesService } from "@/lib/services/badge-rules.service";
 import { BadgeService } from "@/lib/services/badge.service";
+import { RankingService } from "@/lib/services/ranking.service";
+import { TopVolunteersButton } from "@/components/top-volunteers-button";
+import type { VolunteerRankings } from "@/lib/services/ranking.service";
 import Link from "next/link";
 
 export default async function PortalHomePage() {
@@ -13,16 +16,19 @@ export default async function PortalHomePage() {
   let pendientes = 0;
   let horasValidadasMes = 0;
   let insignias = 0;
+  let rankings: VolunteerRankings | null = null;
 
   try {
     if (userId) {
       await BadgeRulesService.evaluateAutomaticBadgesForVolunteer(userId);
     }
 
-    const [logs, badges] = await Promise.all([
+    const [logs, badges, fetchedRankings] = await Promise.all([
       HourLogService.findAll({ volunteerId: userId }),
       BadgeService.listForUser(userId),
+      RankingService.getVolunteerRankings(10),
     ]);
+    rankings = fetchedRankings;
 
     pendientes = logs.filter((l) => l.estado === "pendiente").length;
 
@@ -134,6 +140,13 @@ export default async function PortalHomePage() {
           Mis insignias
         </Link>
       </div>
+
+      {rankings ? (
+        <TopVolunteersButton
+          rankings={rankings}
+          highlightVolunteerId={userId || undefined}
+        />
+      ) : null}
     </div>
   );
 }

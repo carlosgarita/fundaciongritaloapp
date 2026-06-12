@@ -28,6 +28,9 @@ import {
   deleteVolunteerAction,
 } from "@/lib/actions/volunteer";
 import { UserAvatar } from "@/components/user-avatar";
+import { TopVolunteersInlinePanel } from "@/components/top-volunteers-panel";
+import type { VolunteerRankings } from "@/lib/services/ranking.service";
+import { Trophy } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -50,6 +53,7 @@ interface Volunteer {
 
 interface VolunteerListProps {
   volunteers: Volunteer[];
+  rankings: VolunteerRankings;
 }
 
 /* ------------------------------------------------------------------ */
@@ -145,7 +149,7 @@ type EditFormData = z.infer<typeof editFormSchema>;
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
-export function VolunteerList({ volunteers }: VolunteerListProps) {
+export function VolunteerList({ volunteers, rankings }: VolunteerListProps) {
   const router = useRouter();
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -154,6 +158,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
   const [formMode, setFormMode] = useState<"closed" | "create" | "edit">(
     "closed",
   );
+  const [showTop, setShowTop] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -194,6 +199,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
   function openCreate() {
     setEditingId(null);
     setError("");
+    setShowTop(false);
     createForm.reset({
       email: "",
       password: "",
@@ -211,6 +217,7 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
   function openEdit(volunteer: Volunteer) {
     setEditingId(volunteer.id);
     setError("");
+    setShowTop(false);
     editForm.reset({
       nombre: volunteer.nombre,
       apellido: volunteer.apellido,
@@ -333,6 +340,15 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
 
   return (
     <div className="space-y-6">
+      {/* ---- Panel inline: Top 10 voluntarios ---- */}
+      {showTop && (
+        <TopVolunteersInlinePanel
+          rankings={rankings}
+          onClose={() => setShowTop(false)}
+          scrollIntoViewOnMount
+        />
+      )}
+
       {/* ---- Inline form: Create ---- */}
       {formMode === "create" && (
         <Card ref={formRef}>
@@ -579,6 +595,23 @@ export function VolunteerList({ volunteers }: VolunteerListProps) {
               className="h-9 pl-9 pr-3 rounded-lg border border-border bg-white text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-colors w-48"
             />
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              if (showTop) {
+                setShowTop(false);
+              } else {
+                setFormMode("closed");
+                setShowTop(true);
+              }
+            }}
+            icon={<Trophy className="h-4 w-4" />}
+            aria-expanded={showTop}
+            className="whitespace-nowrap"
+          >
+            Top 10 🏆
+          </Button>
           <Button
             onClick={openCreate}
             icon={<Plus className="h-4 w-4" />}
