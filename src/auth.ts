@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { withDbRetry } from "@/lib/db-retry";
 import { authConfig, SESSION_ABSOLUTE_MS } from "@/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -18,12 +19,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findFirst({
-          where: {
-            email: credentials.email as string,
-            deletedAt: null,
-          } as Prisma.UserWhereInput,
-        });
+        const email = (credentials.email as string).trim().toLowerCase();
+
+        const user = await withDbRetry(() =>
+          prisma.user.findFirst({
+            where: { email, deletedAt: null } as Prisma.UserWhereInput,
+          }),
+        );
 
         if (!user?.passwordHash) return null;
 
@@ -47,26 +49,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig.callbacks,
     async jwt({ token, user }) {
       if (user) {
-        const dbUser = await prisma.user.findFirst({
-          where: {
-            id: user.id!,
-            deletedAt: null,
-          } as Prisma.UserWhereInput,
-          select: { role: true, estado: true, nombre: true, apellido: true },
-        });
+        const dbUser = await withDbRetry(() =>
+          prisma.user.findFirst({
+            where: {
+              id: user.id!,
+              deletedAt: null,
+            } as Prisma.UserWhereInput,
+            select: { role: true, estado: true, nombre: true, apellido: true },
+          }),
+        );
         if (dbUser && user.id) {
           token.id = user.id;
           token.role = dbUser.role;
           token.estado = dbUser.estado;
           token.nombre = dbUser.nombre;
           token.apellido = dbUser.apellido;
-          // Marca de tiempo del login (epoch ms). Sirve para imponer el tope
-          // absoluto de vida de la sesión, independiente de la actividad.
           token.loginAt = Date.now();
         }
       }
 
-      // Tope absoluto: invalidar el token si se superó el lapso desde el login.
       const loginAt = typeof token.loginAt === "number" ? token.loginAt : 0;
       if (loginAt > 0 && Date.now() - loginAt > SESSION_ABSOLUTE_MS) {
         return null;

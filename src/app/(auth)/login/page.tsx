@@ -1,18 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Lock, AlertCircle } from "lucide-react";
+import { Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
 import { LogoWithText } from "@/components/logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { loginAction } from "@/lib/actions/auth";
 
+const SLOW_THRESHOLD_MS = 3000;
+
 export default function LoginPage() {
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slowConnection, setSlowConnection] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearSlowTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => clearSlowTimer, [clearSlowTimer]);
 
   const {
     register,
@@ -25,19 +38,26 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormData) {
     setGeneralError("");
+    setSlowConnection(false);
     setLoading(true);
+
+    timerRef.current = setTimeout(
+      () => setSlowConnection(true),
+      SLOW_THRESHOLD_MS,
+    );
 
     try {
       const result = await loginAction(data.email, data.password);
 
-      // If we get here, signIn failed (success redirects automatically)
       if (result && !result.success) {
         setGeneralError(result.error ?? "Error de autenticación.");
       }
     } catch {
-      // NEXT_REDIRECT is caught here — this is expected on success
+      // NEXT_REDIRECT is thrown on successful login redirect
     } finally {
+      clearSlowTimer();
       setLoading(false);
+      setSlowConnection(false);
     }
   }
 
@@ -91,6 +111,15 @@ export default function LoginPage() {
             >
               Ingresar
             </Button>
+
+            {slowConnection && (
+              <div className="flex items-center justify-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg animate-fade-in">
+                <Loader2 className="h-4 w-4 text-amber-600 animate-spin" />
+                <p className="text-sm text-amber-700">
+                  Conectando con el servidor, por favor espere…
+                </p>
+              </div>
+            )}
           </form>
 
           <div className="mt-8 pt-6 border-t border-border text-center">
