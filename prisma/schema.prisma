@@ -24,6 +24,7 @@ model User {
   telefono    String          @default("")
   sede        String          @default("")
   role        UserRole        @default(voluntario)
+  isProtected Boolean         @default(false)
   estado      VolunteerStatus @default(activo)
   habilidades String[]        @default([])
   avatarUrl   String?

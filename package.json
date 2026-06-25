@@ -15,7 +15,9 @@
     "db:seed": "npx tsx prisma/seed.ts",
     "db:seed:badges": "npx tsx prisma/seed-badges-only.ts",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "admin:create": "npx tsx scripts/create-admin.ts",
+    "db:clean": "npx tsx scripts/clean-demo-data.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"

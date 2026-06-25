@@ -53,5 +53,14 @@ export const updateVolunteerSchema = z.object({
     .optional(),
 });
 
+export const changeRoleSchema = z.object({
+  userId: z.string().min(1, "ID de usuario requerido"),
+  role: z.enum(["admin", "voluntario"], {
+    required_error: "Rol requerido",
+    invalid_type_error: "Rol inválido",
+  }),
+});
+
 export type CreateVolunteerData = z.infer<typeof createVolunteerSchema>;
 export type UpdateVolunteerData = z.infer<typeof updateVolunteerSchema>;
+export type ChangeRoleData = z.infer<typeof changeRoleSchema>;

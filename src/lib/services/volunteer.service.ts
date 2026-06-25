@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notDeleted } from "@/lib/soft-delete";
 import bcrypt from "bcryptjs";
-import { Prisma, type VolunteerStatus } from "@prisma/client";
+import { Prisma, type VolunteerStatus, type UserRole } from "@prisma/client";
 
 export interface CreateVolunteerInput {
   email: string;
@@ -36,6 +36,7 @@ const VOLUNTEER_SELECT = {
   telefono: true,
   sede: true,
   role: true,
+  isProtected: true,
   estado: true,
   habilidades: true,
   avatarUrl: true,
@@ -155,11 +156,6 @@ export class VolunteerService {
 
     const trimmed = plainPassword?.trim();
     if (trimmed) {
-      if (user.role !== "voluntario") {
-        throw new Error(
-          "Solo se puede establecer contraseña para cuentas de voluntario.",
-        );
-      }
       data.passwordHash = await bcrypt.hash(trimmed, 12);
     }
 
@@ -170,10 +166,51 @@ export class VolunteerService {
     });
   }
 
+  static async findAllUsers(filters?: { estado?: VolunteerStatus; role?: UserRole }) {
+    return prisma.user.findMany({
+      where: {
+        ...notDeleted,
+        ...(filters?.estado && { estado: filters.estado }),
+        ...(filters?.role && { role: filters.role }),
+      },
+      select: VOLUNTEER_SELECT,
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  static async changeRole(id: string, newRole: UserRole, requesterId: string) {
+    const user = await prisma.user.findFirst({
+      where: { id, ...notDeleted },
+      select: { ...VOLUNTEER_SELECT, isProtected: true },
+    });
+    if (!user) throw new Error("Usuario no encontrado");
+    if (user.id === requesterId) {
+      throw new Error("No puedes cambiar tu propio rol");
+    }
+    if (user.isProtected && newRole !== "admin") {
+      throw new Error("Este administrador está protegido y no puede ser degradado");
+    }
+
+    const adminCount = await prisma.user.count({
+      where: { role: "admin", ...notDeleted },
+    });
+
+    if (user.role === "admin" && newRole === "voluntario" && adminCount <= 1) {
+      throw new Error("Debe existir al menos un administrador en el sistema");
+    }
+
+    return prisma.user.update({
+      where: { id },
+      data: { role: newRole },
+      select: VOLUNTEER_SELECT,
+    });
+  }
+
   static async delete(id: string) {
     const user = await prisma.user.findFirst({ where: { id, ...notDeleted } });
     if (!user) throw new Error("Voluntario no encontrado");
     if (user.role === "admin") throw new Error("No se puede eliminar un administrador");
+    if (user.isProtected) throw new Error("Este usuario está protegido y no puede ser eliminado");
 
     await prisma.$executeRaw(
       Prisma.sql`UPDATE "User" SET "deletedAt" = ${new Date()} WHERE id = ${id}`,

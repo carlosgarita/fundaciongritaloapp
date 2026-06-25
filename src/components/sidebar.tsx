@@ -9,6 +9,7 @@ import {
   BarChart3,
   Clock,
   Award,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/horas", label: "Validar horas", icon: Clock },
   { href: "/badges", label: "Insignias", icon: Award },
   { href: "/reportes", label: "Reportes", icon: BarChart3 },
+  { href: "/configuracion", label: "Configuración", icon: Settings },
 ];
 
 export function Sidebar({ profile }: SidebarProps) {
