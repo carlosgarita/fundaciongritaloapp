@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 import "@/lib/zod-locale";
 import "./globals.css";
 
@@ -18,7 +19,13 @@ export const metadata: Metadata = {
     "Sistema de gestión de voluntarios y actividades para la Fundación Grítalo",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Grítalo",
   },
   metadataBase: new URL(SITE_URL),
   alternates: {
@@ -68,6 +75,7 @@ export default function RootLayout({
           Saltar al contenido principal
         </a>
         {children}
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

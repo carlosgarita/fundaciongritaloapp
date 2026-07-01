@@ -13,6 +13,15 @@ const CONNECTION_ERROR_MSG =
 export async function loginAction(email: string, password: string) {
   const normalizedEmail = email.trim().toLowerCase();
 
+  // Warmup: wake Neon if it's sleeping (with retries).
+  // This runs BEFORE signIn so that authorize() finds the DB already awake.
+  try {
+    await withDbRetry(() => prisma.$queryRawUnsafe("SELECT 1"));
+  } catch (error) {
+    console.error("[DB_WARMUP_ERROR]", error);
+    return { success: false as const, error: CONNECTION_ERROR_MSG };
+  }
+
   try {
     const result = await signIn("credentials", {
       email: normalizedEmail,
