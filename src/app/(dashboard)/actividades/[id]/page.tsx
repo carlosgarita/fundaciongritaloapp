@@ -222,7 +222,7 @@ export default async function ActividadAdminDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
         ) : (
-          <div className="rounded-xl border border-border bg-surface overflow-hidden">
+          <div className="rounded-xl border border-border bg-surface overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-surface-secondary">

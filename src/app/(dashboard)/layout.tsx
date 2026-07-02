@@ -37,7 +37,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-surface-secondary">
       <IdleLogout />
       <Sidebar profile={profile} />
-      <main id="main-content" className="lg:ml-64 min-h-screen">
+      <main id="main-content" className="lg:ml-64 min-h-screen min-w-0 overflow-x-hidden">
         <div className="p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8">{children}</div>
       </main>
     </div>

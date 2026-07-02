@@ -280,16 +280,16 @@ export function ReportsFilters({
 
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2 text-text-primary">
-          <span className="text-sm font-semibold">Filtros</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2 text-text-primary min-w-0">
+          <span className="text-sm font-semibold shrink-0">Filtros</span>
           {isPending ? (
             <Loader2
-              className="h-4 w-4 animate-spin text-text-muted"
+              className="h-4 w-4 animate-spin text-text-muted shrink-0"
               aria-label="Actualizando"
             />
           ) : null}
-          <span className="text-xs text-text-muted">
+          <span className="text-xs text-text-muted truncate">
             · {formatLongDate(active.fromIso)} – {formatLongDate(active.toIso)}
           </span>
         </div>

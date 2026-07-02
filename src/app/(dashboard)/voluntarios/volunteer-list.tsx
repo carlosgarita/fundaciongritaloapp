@@ -567,7 +567,7 @@ export function VolunteerList({ volunteers, rankings }: VolunteerListProps) {
       )}
 
       {/* ---- Toolbar ---- */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+      <div className="space-y-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           {FILTER_TABS.map((tab) => (
             <button
@@ -584,15 +584,15 @@ export function VolunteerList({ volunteers, rankings }: VolunteerListProps) {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[140px] max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
             <input
               type="text"
               placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-9 pl-9 pr-3 rounded-lg border border-border bg-white text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-colors w-48"
+              className="h-9 w-full pl-9 pr-3 rounded-lg border border-border bg-white text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-colors"
             />
           </div>
           <Button
@@ -610,14 +610,15 @@ export function VolunteerList({ volunteers, rankings }: VolunteerListProps) {
             aria-expanded={showTop}
             className="whitespace-nowrap"
           >
-            Top 10 🏆
+            <span className="hidden sm:inline">Top 10</span> 🏆
           </Button>
           <Button
             onClick={openCreate}
             icon={<Plus className="h-4 w-4" />}
             disabled={formMode !== "closed"}
+            className="whitespace-nowrap"
           >
-            Nuevo Voluntario
+            <span className="hidden sm:inline">Nuevo</span> Voluntario
           </Button>
         </div>
       </div>

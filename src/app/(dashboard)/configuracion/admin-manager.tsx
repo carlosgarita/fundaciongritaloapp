@@ -115,21 +115,21 @@ export function AdminManager({ users: initialUsers }: AdminManagerProps) {
             {admins.map((admin) => (
               <div
                 key={admin.id}
-                className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3 first:pt-0 last:pb-0"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <UserAvatar
                     nombre={admin.nombre}
                     apellido={admin.apellido}
                     email={admin.email}
                     avatarUrl={admin.avatarUrl}
-                    className="h-10 w-10"
+                    className="h-10 w-10 shrink-0"
                   />
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-text-primary truncate">
                       {admin.nombre} {admin.apellido}
                     </p>
-                    <p className="text-xs text-text-muted">{admin.email}</p>
+                    <p className="text-xs text-text-muted truncate">{admin.email}</p>
                   </div>
                 </div>
                 {admin.isProtected ? (
@@ -186,21 +186,21 @@ export function AdminManager({ users: initialUsers }: AdminManagerProps) {
               {volunteers.map((vol) => (
                 <div
                   key={vol.id}
-                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                  className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between py-3 first:pt-0 last:pb-0"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <UserAvatar
                       nombre={vol.nombre}
                       apellido={vol.apellido}
                       email={vol.email}
                       avatarUrl={vol.avatarUrl}
-                      className="h-10 w-10"
+                      className="h-10 w-10 shrink-0"
                     />
-                    <div>
-                      <p className="text-sm font-medium text-text-primary">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">
                         {vol.nombre} {vol.apellido}
                       </p>
-                      <p className="text-xs text-text-muted">{vol.email}</p>
+                      <p className="text-xs text-text-muted truncate">{vol.email}</p>
                     </div>
                   </div>
                   <Button
@@ -266,14 +266,15 @@ export function AdminManager({ users: initialUsers }: AdminManagerProps) {
               )}
             </p>
 
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={cancelConfirm} disabled={isPending}>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+              <Button variant="outline" onClick={cancelConfirm} disabled={isPending} className="w-full sm:w-auto">
                 Cancelar
               </Button>
               <Button
                 variant={confirmAction === "promote" ? "primary" : "danger"}
                 onClick={executeChange}
                 loading={isPending}
+                className="w-full sm:w-auto"
               >
                 {confirmAction === "promote"
                   ? "Sí, hacer administrador"
